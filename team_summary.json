@@ -1,0 +1,33 @@
+{
+  "team_name": "GD A",
+  "members": ["Manan Chaudhary", "Aarav Mehta"],
+  "rounds": [
+    {
+      "round": "Round 1",
+      "average_score": 77.5,
+      "scores": {
+        "Manan Chaudhary": 78,
+        "Aarav Mehta": 77
+      },
+      "team_feedback": "A solid start with structured arguments and decent POI handling. Room to improve in stakeholder depth."
+    },
+    {
+      "round": "Round 2",
+      "average_score": 80,
+      "scores": {
+        "Manan Chaudhary": 81,
+        "Aarav Mehta": 79
+      },
+      "team_feedback": "Improved synergy between speakers, clearer splits, and strong engagement with the motion."
+    },
+    {
+      "round": "Round 3",
+      "average_score": 83,
+      "scores": {
+        "Manan Chaudhary": 84,
+        "Aarav Mehta": 82
+      },
+      "team_feedback": "Excellent coordination and structure. Rebuttals were sharp and strategic, helping secure the round."
+    }
+  ]
+}

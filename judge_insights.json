@@ -1,0 +1,27 @@
+{
+  "judge_name": "Arjun Mehta",
+  "rounds": [
+    {
+      "round": "Round 1",
+      "speakers_scored": [
+        { "name": "Manan Chaudhary", "score": 78 },
+        { "name": "Aarav Mehta", "score": 77 }
+      ]
+    },
+    {
+      "round": "Round 2",
+      "speakers_scored": [
+        { "name": "Manan Chaudhary", "score": 81 },
+        { "name": "Aarav Mehta", "score": 79 }
+      ]
+    },
+    {
+      "round": "Round 3",
+      "speakers_scored": [
+        { "name": "Manan Chaudhary", "score": 84 },
+        { "name": "Aarav Mehta", "score": 82 }
+      ]
+    }
+  ],
+  "overall_judging_insight": "Arjun Mehta maintains consistent scoring with a slight upward trend for well-structured arguments and improved POI engagement. Judges speakers progressively higher as the rounds evolve."
+}

@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TabbyCat AI Insights</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Debater Insights Dashboard</h1>
+    <p class="subtitle">Advanced analytics for competitive debate performance</p>
+  </header>
+
+  <main class="dashboard">
+    <div class="section">
+      <div class="section-header">
+        <h2>Speaker Performance</h2>
+        <select id="roundDropdown" onchange="showSpeakerData()"></select>
+      </div>
+      <div id="speakerInfo"></div>
+      <div class="chart-container">
+        <canvas id="speakerChart"></canvas>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Team Analytics</h2>
+      </div>
+      <div id="teamInfo"></div>
+      <div class="chart-container">
+        <canvas id="teamChart"></canvas>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Judge Analytics</h2>
+        <select id="judgeRoundDropdown" onchange="showJudgeData()"></select>
+      </div>
+      <div id="judgeInfo"></div>
+      <div class="judge-insight">
+        <h4>Overall Judging Pattern</h4>
+        <p id="judgeInsight"></p>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Motion Analytics</h2>
+      </div>
+      <div id="motionData"></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
