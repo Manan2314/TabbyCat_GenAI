@@ -6,7 +6,7 @@ import requests
 import json
 import os
 import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend
+matplotlib.use('Agg')   # Use non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
@@ -20,7 +20,8 @@ from io import BytesIO
 
 class AIIntegration:
     def __init__(self):
-        # Initialize with API keys from Replit Secrets
+        # Initialize with API keys from environment variables.
+        # On Render, these will be set in your Web Service's Environment Variables.
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.sarvam_api_key = os.getenv('SARVAM_API_KEY')
 
@@ -95,36 +96,36 @@ class AIIntegration:
         """Sarvam AI API integration"""
         try:
             if not self.sarvam_api_key:
-                return "Sarvam AI API key not found. Please add SARVAM_API_KEY to your Replit Secrets."
-            
+                return "Sarvam AI API key not found. Please add SARVAM_API_KEY to your Render Environment Variables."
+
             headers = {
                 'Authorization': f'Bearer {self.sarvam_api_key}',
                 'Content-Type': 'application/json'
             }
 
             data = {
-                'model': 'sarvam-2b-instruct',  # Updated model name
+                'model': 'sarvam-2b-instruct',
                 'messages': [{'role': 'user', 'content': prompt}],
                 'max_tokens': 500,
                 'temperature': 0.7
             }
 
             response = requests.post(
-                'https://api.sarvam.ai/v1/chat/completions',  # Updated URL
+                'https://api.sarvam.ai/v1/chat/completions',
                 headers=headers,
                 json=data,
                 timeout=30
             )
-            
+
             print(f"Sarvam API Status: {response.status_code}")
-            
+
             if response.status_code == 200:
                 result = response.json()
                 return result['choices'][0]['message']['content']
             else:
                 print(f"Sarvam API Error Response: {response.text}")
                 return f"Sarvam AI unavailable (Status: {response.status_code}). Using fallback analysis."
-                
+
         except requests.exceptions.Timeout:
             return "Sarvam AI request timeout. Using fallback analysis."
         except Exception as e:
@@ -133,25 +134,27 @@ class AIIntegration:
 
     def _fallback_analysis(self, data):
         """Fallback analysis when no AI API is available"""
+        # Note: You have multiple fallback functions.
+        # This one is used by generate_speaker_feedback if both API keys are missing.
         return {
             "analysis": "Basic statistical analysis completed",
             "suggestion": "Consider integrating AI APIs for enhanced insights",
-            "note": "Add your OpenAI or Sarvam AI key to Replit Secrets for advanced features"
+            "note": "Add your OpenAI or Sarvam AI key to Render Environment Variables for advanced features"
         }
 
     def generate_real_time_speaker_insights(self, speaker_name, recent_scores, motion_context=""):
         """Generate real-time AI insights for speakers with advanced analytics"""
-        
+
         # Generate statistical analysis
         analytics = self._generate_speaker_analytics(speaker_name, recent_scores)
-        
+
         prompt = f"""
         Analyze this debater's performance with detailed statistics:
 
         Speaker: {speaker_name}
         Recent Scores: {recent_scores}
         Motion Context: {motion_context}
-        
+
         Analytics Summary:
         - Average Score: {analytics['avg_score']:.1f}
         - Score Trend: {analytics['trend']}
@@ -173,7 +176,7 @@ class AIIntegration:
             ai_insights = self._call_sarvam(prompt)
         else:
             ai_insights = self._fallback_speaker_insights(speaker_name, recent_scores)
-        
+
         # Combine AI insights with visual analytics
         return {
             "ai_analysis": ai_insights,
@@ -242,7 +245,7 @@ class AIIntegration:
 
         Team: {team_data.get('team_name', 'Unknown Team')}
         Members: {', '.join(team_data.get('members', []))}
-        
+
         Round Performance:
         {json.dumps(team_data.get('rounds', []), indent=2)}
 
@@ -251,7 +254,7 @@ class AIIntegration:
         2. Individual member growth patterns
         3. Strategic recommendations for improvement
         4. Coordination and teamwork insights
-        5. Preparation tips for next rounds
+        4. Preparation tips for next rounds
 
         Format as actionable, specific advice.
         """
@@ -267,10 +270,10 @@ class AIIntegration:
         Analyze this judge's scoring patterns and behavioral tendencies:
 
         Judge: {judge_data.get('judge_name', 'Unknown Judge')}
-        
+
         Scoring History:
         {json.dumps(judge_data.get('rounds', []), indent=2)}
-        
+
         Overall Pattern: {judge_data.get('overall_judging_insight', '')}
 
         Provide detailed analysis:
@@ -293,12 +296,12 @@ class AIIntegration:
         rounds = team_data.get('rounds', [])
         if not rounds:
             return "Team analysis: No performance data available."
-        
+
         latest_avg = rounds[-1].get('average_score', 0)
         trend = "improving" if len(rounds) > 1 and rounds[-1].get('average_score', 0) > rounds[0].get('average_score', 0) else "stable"
-        
+
         return f"""Team Analysis for {team_data.get('team_name', 'Team')}:
-        
+
 Performance trend: {trend}
 Latest average: {latest_avg}
 Focus on maintaining consistency and building on member strengths
@@ -308,30 +311,30 @@ Work on coordination between speakers for better synergy"""
         rounds = judge_data.get('rounds', [])
         if not rounds:
             return "Judge analysis: No scoring data available."
-        
+
         all_scores = []
         for round_data in rounds:
             for speaker in round_data.get('speakers_scored', []):
                 all_scores.append(speaker.get('score', 0))
-        
+
         if all_scores:
             avg_score = sum(all_scores) / len(all_scores)
             return f"""Comprehensive Judge Analysis:
-            
+
 Average scoring: {avg_score:.1f}
 Consistency: {'High' if max(all_scores) - min(all_scores) < 10 else 'Moderate'}
 Scoring trend: Look for patterns in argument preferences
 Adaptation tip: Focus on clear structure and evidence-based arguments"""
-        
+
         return "Judge analysis: Insufficient data for comprehensive analysis."
 
     def _generate_speaker_analytics(self, speaker_name, scores):
         """Generate comprehensive speaker analytics"""
         if not scores or len(scores) == 0:
             return {"error": "No scores available"}
-        
+
         scores_array = np.array(scores)
-        
+
         # Calculate trends
         if len(scores) > 1:
             slope = np.polyfit(range(len(scores)), scores, 1)[0]
@@ -340,15 +343,15 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
         else:
             trend = "insufficient_data"
             improvement_rate = 0
-        
+
         # Statistical measures
         avg_score = np.mean(scores_array)
         std_dev = np.std(scores_array)
         consistency = "high" if std_dev < 3 else "moderate" if std_dev < 6 else "low"
-        
+
         # Percentile estimation (assuming normal distribution around 75-80)
         percentile = min(95, max(5, ((avg_score - 70) / 20) * 100))
-        
+
         return {
             "avg_score": avg_score,
             "std_dev": std_dev,
@@ -359,16 +362,16 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
             "score_range": f"{min(scores)}-{max(scores)}",
             "total_rounds": len(scores)
         }
-    
+
     def _create_speaker_visualizations(self, scores, speaker_name):
         """Create visualizations for speaker performance"""
         try:
             if not scores or len(scores) == 0:
                 return {"error": "No scores available for visualization"}
-            
+
             # Performance trend chart using matplotlib (more reliable)
             rounds = list(range(1, len(scores) + 1))
-            
+
             fig, ax = plt.subplots(1, 1, figsize=(8, 5))
             ax.plot(rounds, scores, marker='o', color='#e74c3c', linewidth=2, markersize=6)
             ax.set_title(f"{speaker_name}'s Performance Trend", fontsize=14, fontweight='bold')
@@ -376,21 +379,21 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
             ax.set_ylabel("Score")
             ax.grid(True, alpha=0.3)
             ax.set_ylim(min(scores) - 2, max(scores) + 2)
-            
+
             # Add score labels on points
             for i, score in enumerate(scores):
-                ax.annotate(f'{score}', (rounds[i], score), textcoords="offset points", 
-                           xytext=(0,10), ha='center', fontsize=9)
-            
+                ax.annotate(f'{score}', (rounds[i], score), textcoords="offset points",
+                               xytext=(0,10), ha='center', fontsize=9)
+
             plt.tight_layout()
-            
+
             # Convert to base64 for embedding
             img_buffer = BytesIO()
             plt.savefig(img_buffer, format='png', dpi=120, bbox_inches='tight', facecolor='white')
             img_buffer.seek(0)
             chart_b64 = base64.b64encode(img_buffer.getvalue()).decode()
             plt.close('all')
-            
+
             return {
                 "trend_chart": chart_b64,
                 "chart_type": "performance_trend"
@@ -398,33 +401,33 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
         except Exception as e:
             print(f"Visualization error: {str(e)}")
             return {"error": f"Visualization generation failed: {str(e)}"}
-    
+
     def generate_performance_report(self, speaker_data_list):
         """Generate comprehensive performance report with multiple visualizations"""
         try:
             if not speaker_data_list or len(speaker_data_list) == 0:
                 return self._generate_fallback_report("No data available")
-            
+
             # Create DataFrame
             df = pd.DataFrame(speaker_data_list)
-            
+
             # Ensure required columns exist
             required_columns = ['score', 'round', 'team', 'name']
             for col in required_columns:
                 if col not in df.columns:
                     return self._generate_fallback_report(f"Missing required column: {col}")
-            
+
             # Create figure with proper size
             fig, axes = plt.subplots(2, 2, figsize=(12, 8))
             fig.suptitle('TabbyCat Performance Analytics Report', fontsize=16, fontweight='bold')
-            
+
             # Score distribution
             axes[0, 0].hist(df['score'], bins=10, color='#e74c3c', alpha=0.7, edgecolor='black')
             axes[0, 0].set_title('Score Distribution')
             axes[0, 0].set_xlabel('Score')
             axes[0, 0].set_ylabel('Frequency')
             axes[0, 0].grid(True, alpha=0.3)
-            
+
             # Round-wise performance
             if 'round' in df.columns:
                 round_avg = df.groupby('round')['score'].mean()
@@ -435,7 +438,7 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
                 axes[0, 1].set_xticks(range(len(round_avg)))
                 axes[0, 1].set_xticklabels(round_avg.index, rotation=45)
                 axes[0, 1].grid(True, alpha=0.3)
-            
+
             # Team performance comparison
             if 'team' in df.columns:
                 team_avg = df.groupby('team')['score'].mean().sort_values(ascending=True)
@@ -445,7 +448,7 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
                 axes[1, 0].set_yticks(range(len(team_avg)))
                 axes[1, 0].set_yticklabels(team_avg.index)
                 axes[1, 0].grid(True, alpha=0.3)
-            
+
             # Speaker performance summary
             if 'name' in df.columns:
                 speaker_avg = df.groupby('name')['score'].mean().sort_values(ascending=True)
@@ -456,39 +459,39 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
                 axes[1, 1].set_yticks(range(len(speaker_avg)))
                 axes[1, 1].set_yticklabels(speaker_avg.index)
                 axes[1, 1].grid(True, alpha=0.3)
-            
+
             plt.tight_layout()
-            
+
             # Save to base64
             buffer = BytesIO()
             plt.savefig(buffer, format='png', dpi=120, bbox_inches='tight', facecolor='white')
             buffer.seek(0)
             report_b64 = base64.b64encode(buffer.getvalue()).decode()
-            plt.close('all')  # Close all figures to free memory
-            
+            plt.close('all') # Close all figures to free memory
+
             return report_b64
-            
+
         except Exception as e:
             print(f"Performance report error: {str(e)}")
             return self._generate_fallback_report(str(e))
-    
+
     def _generate_fallback_report(self, error_msg):
         """Generate a simple fallback report when main generation fails"""
         try:
             fig, ax = plt.subplots(1, 1, figsize=(8, 6))
-            ax.text(0.5, 0.5, f'Performance Report\n\nError: {error_msg}\n\nPlease check your data and try again.', 
-                   horizontalalignment='center', verticalalignment='center', fontsize=12,
-                   bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray"))
+            ax.text(0.5, 0.5, f'Performance Report\n\nError: {error_msg}\n\nPlease check your data and try again.',
+                            horizontalalignment='center', verticalalignment='center', fontsize=12,
+                            bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray"))
             ax.set_xlim(0, 1)
             ax.set_ylim(0, 1)
             ax.axis('off')
-            
+
             buffer = BytesIO()
             plt.savefig(buffer, format='png', dpi=120, bbox_inches='tight', facecolor='white')
             buffer.seek(0)
             report_b64 = base64.b64encode(buffer.getvalue()).decode()
             plt.close('all')
-            
+
             return report_b64
         except Exception as fallback_error:
             print(f"Fallback report error: {str(fallback_error)}")
@@ -499,7 +502,7 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
         return {
             "analysis": "Basic statistical analysis completed",
             "suggestion": "Consider integrating AI APIs for enhanced insights",
-            "note": "Add your OpenAI or Sarvam AI key to Replit Secrets for advanced features"
+            "note": "Add your OpenAI or Sarvam AI key to Render Environment Variables for advanced features"
         }
 
 # Example usage functions
