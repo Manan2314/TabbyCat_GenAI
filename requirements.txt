@@ -1,0 +1,3 @@
+Flask
+flask-cors
+gunicorn # We'll use Gunicorn to serve your Flask app on Render
