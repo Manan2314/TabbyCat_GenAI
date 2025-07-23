@@ -1,0 +1,14 @@
+[
+  {
+    "motion": "This House Would Ban Zoos",
+    "gov_win_rate": 62,
+    "opp_win_rate": 38,
+    "insight": "Gov teams generally win when focusing on animal rights and ethical frameworks."
+  },
+  {
+    "motion": "This House Supports Universal Basic Income",
+    "gov_win_rate": 48,
+    "opp_win_rate": 52,
+    "insight": "Opp tends to win by emphasizing economic feasibility and implementation gaps."
+  }
+]
