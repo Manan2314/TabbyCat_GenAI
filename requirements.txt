@@ -1,3 +1,12 @@
 Flask
 flask-cors
-gunicorn # We'll use Gunicorn to serve your Flask app on Render
+gunicorn
+openai
+requests
+matplotlib
+seaborn
+plotly
+numpy
+pandas
+wordcloud
+textstat
