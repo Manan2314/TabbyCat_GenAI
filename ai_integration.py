@@ -122,7 +122,7 @@ class AIIntegration:
             }
 
             data = {
-                'model': 'sarvam-2b-instruct', # or your specific Sarvam model
+                'model': 'sarvam-m', # or your specific Sarvam model
                 'messages': [{'role': 'user', 'content': prompt}],
                 'max_tokens': 500,
                 'temperature': 0.7
