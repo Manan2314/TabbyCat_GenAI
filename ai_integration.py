@@ -6,7 +6,7 @@ import requests
 import json
 import os
 import matplotlib
-matplotlib.use('Agg')   # Use non-interactive backend
+matplotlib.use('Agg')    # Use non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
@@ -25,14 +25,29 @@ class AIIntegration:
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.sarvam_api_key = os.getenv('SARVAM_API_KEY')
 
+        # You might want to initialize OpenAI client here if API key is present
+        # if self.openai_api_key:
+        #     self.openai_client = openai.OpenAI(api_key=self.openai_api_key)
+
     def generate_speaker_feedback(self, speaker_data):
         """
-        Generate AI-powered personalized feedback for speakers
+        Generate AI-powered personalized feedback for speakers.
+        Expects speaker_data as a dictionary with at least 'name' and 'scores' keys.
         """
+        # Ensure speaker_data is a dictionary and has required keys
+        if not isinstance(speaker_data, dict):
+            return {"error": "Invalid speaker_data format. Expected a dictionary."}
+        
+        # 🔹 Extract speaker_name and scores from speaker_data for _generate_speaker_analytics
+        speaker_name = speaker_data.get("name", "Unnamed Speaker")
+        scores = speaker_data.get("scores", [])
+
         if self.openai_api_key:
+            # Assuming _openai_speaker_analysis also processes speaker_data dictionary
             return self._openai_speaker_analysis(speaker_data)
         elif self.sarvam_api_key:
-            return self._generate_speaker_analytics(speaker_data)
+            # 🔹 Corrected call: Pass speaker_name and scores separately
+            return self._generate_speaker_analytics(speaker_name, scores)
         else:
             return self._fallback_analysis(speaker_data)
 
@@ -81,7 +96,10 @@ class AIIntegration:
     def _call_openai(self, prompt):
         """OpenAI API integration"""
         try:
-            client = openai.OpenAI(api_key=self.openai_api_key)
+            if not self.openai_api_key:
+                return "OpenAI API key not found. Please add OPENAI_API_KEY to your Render Environment Variables."
+            
+            client = openai.OpenAI(api_key=self.openai_api_key) # Initialize client here if not in __init__
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
@@ -104,14 +122,14 @@ class AIIntegration:
             }
 
             data = {
-                'model': 'sarvam-2b-instruct',
+                'model': 'sarvam-2b-instruct', # or your specific Sarvam model
                 'messages': [{'role': 'user', 'content': prompt}],
                 'max_tokens': 500,
                 'temperature': 0.7
             }
 
             response = requests.post(
-                'https://api.sarvam.ai/v1/chat/completions',
+                'https://api.sarvam.ai/v1/chat/completions', # Verify Sarvam AI endpoint
                 headers=headers,
                 json=data,
                 timeout=30
@@ -132,10 +150,29 @@ class AIIntegration:
             print(f"Sarvam AI Error: {str(e)}")
             return f"Sarvam AI Error: {str(e)}. Using fallback analysis."
 
+    # 🔹 Placeholder for _openai_speaker_analysis - define this if you use OpenAI
+    def _openai_speaker_analysis(self, speaker_data):
+        """
+        Placeholder for OpenAI-specific speaker analysis.
+        You'll need to implement the actual logic here.
+        It should take speaker_data (a dict) and generate insights using OpenAI.
+        """
+        speaker_name = speaker_data.get("name", "Unnamed Speaker")
+        scores = speaker_data.get("scores", [])
+        feedback_history = speaker_data.get("feedback_history", [])
+
+        if not scores:
+            return f"No scores for {speaker_name} to analyze with OpenAI."
+
+        prompt = f"""
+        Analyze {speaker_name}'s debate performance based on these scores: {scores}
+        Feedback history: {feedback_history}
+        Provide constructive feedback, strengths, and areas for improvement.
+        """
+        return self._call_openai(prompt) # Reuse _call_openai
+
     def _fallback_analysis(self, data):
-        """Fallback analysis when no AI API is available"""
-        # Note: You have multiple fallback functions.
-        # This one is used by generate_speaker_feedback if both API keys are missing.
+        """Fallback analysis when no AI API is available for speaker feedback"""
         return {
             "analysis": "Basic statistical analysis completed",
             "suggestion": "Consider integrating AI APIs for enhanced insights",
@@ -145,7 +182,7 @@ class AIIntegration:
     def generate_real_time_speaker_insights(self, speaker_name, recent_scores, motion_context=""):
         """Generate real-time AI insights for speakers with advanced analytics"""
 
-        # Generate statistical analysis
+        # Generate statistical analysis (This call remains unchanged as it's consistent)
         analytics = self._generate_speaker_analytics(speaker_name, recent_scores)
 
         prompt = f"""
@@ -229,13 +266,19 @@ class AIIntegration:
             return self._fallback_judge_analysis(judge_history)
 
     def _fallback_speaker_insights(self, name, scores):
+        """Fallback for speaker insights when no AI API is available"""
+        if not scores:
+            return f"{name}'s performance analysis: No scores provided."
+        
         trend = "improving" if len(scores) > 1 and scores[-1] > scores[0] else "stable"
         return f"{name}'s performance is {trend}. Current average: {sum(scores)/len(scores):.1f}. Focus on consistency and argument depth."
 
     def _fallback_strategy(self, motion, side):
+        """Fallback for motion strategy when no AI API is available"""
         return f"For {side} on '{motion}': Focus on clear definitions, strong examples, and stakeholder impact analysis."
 
     def _fallback_judge_analysis(self, history):
+        """Fallback for judge analysis when no AI API is available"""
         return "Judge analysis: Look for consistent scoring patterns. Adapt your style to match judge preferences for better results."
 
     def generate_team_insights_realtime(self, team_data):
@@ -254,7 +297,7 @@ class AIIntegration:
         2. Individual member growth patterns
         3. Strategic recommendations for improvement
         4. Coordination and teamwork insights
-        4. Preparation tips for next rounds
+        5. Preparation tips for next rounds
 
         Format as actionable, specific advice.
         """
@@ -293,11 +336,12 @@ class AIIntegration:
             return self._fallback_comprehensive_judge_analysis(judge_data)
 
     def _fallback_team_analysis(self, team_data):
+        """Fallback for team analysis when no AI API is available"""
         rounds = team_data.get('rounds', [])
         if not rounds:
             return "Team analysis: No performance data available."
 
-        latest_avg = rounds[-1].get('average_score', 0)
+        latest_avg = rounds[-1].get('average_score', 0) if rounds else 0
         trend = "improving" if len(rounds) > 1 and rounds[-1].get('average_score', 0) > rounds[0].get('average_score', 0) else "stable"
 
         return f"""Team Analysis for {team_data.get('team_name', 'Team')}:
@@ -308,6 +352,7 @@ Focus on maintaining consistency and building on member strengths
 Work on coordination between speakers for better synergy"""
 
     def _fallback_comprehensive_judge_analysis(self, judge_data):
+        """Fallback for comprehensive judge analysis when no AI API is available"""
         rounds = judge_data.get('rounds', [])
         if not rounds:
             return "Judge analysis: No scoring data available."
@@ -331,7 +376,7 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
     def _generate_speaker_analytics(self, speaker_name, scores):
         """Generate comprehensive speaker analytics"""
         if not scores or len(scores) == 0:
-            return {"error": "No scores available"}
+            return {"error": f"No scores available for {speaker_name} for analytics"}
 
         scores_array = np.array(scores)
 
@@ -383,7 +428,7 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
             # Add score labels on points
             for i, score in enumerate(scores):
                 ax.annotate(f'{score}', (rounds[i], score), textcoords="offset points",
-                               xytext=(0,10), ha='center', fontsize=9)
+                                xytext=(0,10), ha='center', fontsize=9)
 
             plt.tight_layout()
 
@@ -392,7 +437,7 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
             plt.savefig(img_buffer, format='png', dpi=120, bbox_inches='tight', facecolor='white')
             img_buffer.seek(0)
             chart_b64 = base64.b64encode(img_buffer.getvalue()).decode()
-            plt.close('all')
+            plt.close('all') # Close all figures to free memory
 
             return {
                 "trend_chart": chart_b64,
@@ -480,8 +525,8 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
         try:
             fig, ax = plt.subplots(1, 1, figsize=(8, 6))
             ax.text(0.5, 0.5, f'Performance Report\n\nError: {error_msg}\n\nPlease check your data and try again.',
-                            horizontalalignment='center', verticalalignment='center', fontsize=12,
-                            bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray"))
+                                horizontalalignment='center', verticalalignment='center', fontsize=12,
+                                bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray"))
             ax.set_xlim(0, 1)
             ax.set_ylim(0, 1)
             ax.axis('off')
@@ -498,7 +543,7 @@ Adaptation tip: Focus on clear structure and evidence-based arguments"""
             return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
 
     def _analyze_patterns_manually(self, judge_data):
-        """Fallback analysis when no AI API is available"""
+        """Fallback analysis when no AI API is available for judge patterns"""
         return {
             "analysis": "Basic statistical analysis completed",
             "suggestion": "Consider integrating AI APIs for enhanced insights",
