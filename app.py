@@ -1,11 +1,15 @@
 import os
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import json
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+# 🔹 Import your AI processing logic
+from ai_integration import generate_speaker_insights, generate_team_insights, generate_judge_insights
+
+app = Flask(__name__)
 CORS(app)
 
+# Utility function to load JSON files
 def load_json(filename):
     base_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(base_dir, "data", filename)
@@ -14,26 +18,29 @@ def load_json(filename):
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return "🎙️ TabbyCat AI Companion Backend is Running!"
 
 @app.route("/speakers", methods=["GET"])
 def get_speakers():
     data = load_json("speaker_feedback.json")
-    return jsonify(data)
+    insights = generate_speaker_insights(data)
+    return jsonify({"raw": data, "insights": insights})
 
 @app.route("/teams", methods=["GET"])
 def get_teams():
     data = load_json("team_summary.json")
-    return jsonify(data)
-
-@app.route("/motions", methods=["GET"])
-def get_motions():
-    data = load_json("motion_data.json")
-    return jsonify(data)
+    insights = generate_team_insights(data)
+    return jsonify({"raw": data, "insights": insights})
 
 @app.route("/judges", methods=["GET"])
 def get_judges():
     data = load_json("judge_insights.json")
+    insights = generate_judge_insights(data)
+    return jsonify({"raw": data, "insights": insights})
+
+@app.route("/motions", methods=["GET"])
+def get_motions():
+    data = load_json("motion_data.json")
     return jsonify(data)
 
 if __name__ == "__main__":
