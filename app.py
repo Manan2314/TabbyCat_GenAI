@@ -40,48 +40,75 @@ def index():
 # 🔹 API Route: Get speaker feedback
 @app.route("/speakers", methods=["GET"])
 def get_speakers():
+    # speaker_feedback.json is an array of speaker round data
     data = load_json("speaker_feedback.json")
     if data is None:
         return jsonify({"error": "Speaker feedback data could not be loaded."}), 500
 
-    all_speaker_insights = []
-    if isinstance(data, list):
-        for speaker_item in data:
-            insights = ai_processor.generate_speaker_feedback(speaker_item)
-            all_speaker_insights.append({"speaker_data": speaker_item, "insights": insights})
-    else:
-        insights = ai_processor.generate_speaker_feedback(data)
-        all_speaker_insights.append({"speaker_data": data, "insights": insights})
+    processed_speakers = []
+    # Ensure data is treated as a list, even if it's a single object (though your JSON is an array)
+    data_list = data if isinstance(data, list) else [data]
 
-    return jsonify({"raw": data, "insights": all_speaker_insights})
+    for speaker_item in data_list:
+        # Generate AI insights for each speaker item (round performance)
+        insights = ai_processor.generate_speaker_feedback(speaker_item)
+        
+        # Combine the original speaker_item with its AI insights
+        # This creates a new dictionary for each round's speaker data + its insights
+        combined_item = speaker_item.copy() # Make a copy to avoid modifying original loaded data
+        combined_item['ai_insights'] = insights # Add AI insights under a new key
+        processed_speakers.append(combined_item)
+    
+    # 🔹 Return the list of processed speaker items directly
+    return jsonify(processed_speakers)
 
 # 🔹 API Route: Get team summaries
 @app.route("/teams", methods=["GET"])
 def get_teams():
+    # team_summary.json is a single object
     data = load_json("team_summary.json")
     if data is None:
         return jsonify({"error": "Team summary data could not be loaded."}), 500
 
+    # Generate AI insights for the entire team summary object
     insights = ai_processor.generate_team_insights_realtime(data)
-    return jsonify({"raw": data, "insights": insights})
+    
+    # 🔹 Add AI insights directly to the team data object
+    # Make a copy to avoid modifying the original loaded data if it's used elsewhere
+    processed_team_data = data.copy() 
+    processed_team_data['ai_insights'] = insights 
+    
+    # 🔹 Return the processed team data object directly
+    return jsonify(processed_team_data)
 
 # 🔹 API Route: Get judge insights
 @app.route("/judges", methods=["GET"])
 def get_judges():
+    # judge_insights.json is a single object
     data = load_json("judge_insights.json")
     if data is None:
         return jsonify({"error": "Judge insights data could not be loaded."}), 500
 
+    # Generate AI insights for the entire judge insights object
     insights = ai_processor.analyze_judge_comprehensive(data)
-    return jsonify({"raw": data, "insights": insights})
+    
+    # 🔹 Add AI insights directly to the judge data object
+    # Make a copy to avoid modifying the original loaded data if it's used elsewhere
+    processed_judge_data = data.copy()
+    processed_judge_data['ai_insights'] = insights
+    
+    # 🔹 Return the processed judge data object directly
+    return jsonify(processed_judge_data)
 
 # 🔹 API Route: Get motions
 @app.route("/motions", methods=["GET"])
 def get_motions():
+    # motion_data.json is an array of objects
     data = load_json("motion_data.json")
     if data is None:
         return jsonify({"error": "Motion data could not be loaded."}), 500
 
+    # 🔹 Return the motion data directly (it's already an array)
     return jsonify(data)
 
 # 🔹 Start the app
