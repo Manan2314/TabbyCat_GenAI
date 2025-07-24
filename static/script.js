@@ -3,7 +3,7 @@ let speakerChart, teamChart;
 
 // Define a placeholder for your backend API URL.
 // This will be replaced by Render when your static site is deployed.
-const API_BASE_URL = 'YOUR_PYTHON_BACKEND_RENDER_URL'; // <<< IMPORTANT: Placeholder!
+const API_BASE_URL = 'https://tabbycat-genai.onrender.com'; // <<< IMPORTANT: Placeholder!
 
 async function loadData() {
     try {
