@@ -32,7 +32,7 @@ class AIIntegration:
         if self.openai_api_key:
             return self._openai_speaker_analysis(speaker_data)
         elif self.sarvam_api_key:
-            return self._sarvam_speaker_analysis(speaker_data)
+            return self._generate_speaker_analysis(speaker_data)
         else:
             return self._fallback_analysis(speaker_data)
 
