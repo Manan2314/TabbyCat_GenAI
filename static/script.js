@@ -23,8 +23,6 @@ async function loadData() {
         showTeamChart();
         
         // Ensure judgeData and its ai_insights exist
-        // The overall_judging_insight is part of the raw data, and ai_insights is the AI-generated one.
-        // You might want to display both or choose one.
         const judgeInsightElement = document.getElementById("judgeInsight");
         if (judgeInsightElement) {
             if (judgeData && judgeData.ai_insights) {
@@ -37,9 +35,23 @@ async function loadData() {
             }
         }
 
+        // 🔹 Handle Motion Data Display 🔹
+        const motionDataResponse = await fetch(`${API_BASE_URL}/motions`).then(res => res.json());
+        const motionAnalysisElement = document.getElementById("motionData");
+        if (motionAnalysisElement && Array.isArray(motionDataResponse)) {
+            let motionHtml = "<h4>Available Motions:</h4><ul>";
+            motionDataResponse.forEach(motion => {
+                motionHtml += `<li><strong>${motion.motion}</strong>: Gov Win Rate: ${motion.gov_win_rate}%, Opp Win Rate: ${motion.opp_win_rate}% - <em>${motion.insight}</em></li>`;
+            });
+            motionHtml += "</ul>";
+            motionAnalysisElement.innerHTML = motionHtml;
+        } else if (motionAnalysisElement) {
+            motionAnalysisElement.innerHTML = "<p>No motion data available or invalid format.</p>";
+        }
+
+
     } catch (err) {
         console.error("Error loading data:", err);
-        // Use a custom message box instead of alert() for better UX
         displayMessageBox("Error", "There was an error loading the data from the server. Please try again later.");
     }
 }
@@ -52,11 +64,10 @@ function populateDropdowns() {
 
     // speakerData is now directly an array of combined speaker round objects
     if (Array.isArray(speakerData)) {
-        // Use a Set to get unique rounds if a speaker has multiple entries
         const uniqueRounds = [...new Set(speakerData.map(entry => entry.round))];
         uniqueRounds.forEach((roundName, index) => {
             const opt = document.createElement("option");
-            opt.value = index; // Use index or actual round name if unique
+            opt.value = roundName; // Use roundName as value for easier lookup
             opt.text = roundName;
             roundDropdown.add(opt);
         });
@@ -83,25 +94,27 @@ function populateDropdowns() {
 
 function showSpeakerData() {
     const dropdown = document.getElementById("roundDropdown");
-    const selectedRoundName = dropdown.options[dropdown.selectedIndex].text; // Get the text of the selected option
+    // Check if dropdown has options before trying to access selectedIndex
+    if (!dropdown || dropdown.options.length === 0) {
+        document.getElementById("speakerInfo").innerHTML = "No rounds available for speaker data.";
+        return;
+    }
+    const selectedRoundName = dropdown.options[dropdown.selectedIndex].value; // Use value (which is now roundName)
     
-    // Find the speaker data for the selected round
-    // speakerData is an array of { original_speaker_data_for_round, ai_insights }
     const dataForSelectedRound = speakerData.find(item => item.round === selectedRoundName);
 
     const speakerInfoElement = document.getElementById("speakerInfo");
     if (speakerInfoElement) {
         if (dataForSelectedRound) {
-            // Access original data and AI insights
-            const originalData = dataForSelectedRound; // Since we combined it directly
+            const originalData = dataForSelectedRound;
             const aiInsights = dataForSelectedRound.ai_insights;
 
             speakerInfoElement.innerHTML = `
-                <strong>Round:</strong> ${originalData.round}<br>
-                <strong>Score:</strong> ${originalData.score}<br>
+                <strong>Round:</strong> ${originalData.round || 'N/A'}<br>
+                <strong>Score:</strong> ${originalData.score || 'N/A'}<br>
                 <strong>Feedback:</strong><br>
-                <em>${originalData.feedback.general_feedback || 'N/A'}</em><br>
-                <em>${originalData.feedback.improvement_advice || 'N/A'}</em><br>
+                <em>${originalData.feedback?.general_feedback || 'N/A'}</em><br>
+                <em>${originalData.feedback?.improvement_advice || 'N/A'}</em><br>
                 <br>
                 <strong>AI Insights:</strong><br>
                 <em>${aiInsights || 'No AI insights available.'}</em>
@@ -113,8 +126,13 @@ function showSpeakerData() {
 }
 
 function showTeamChart() {
-    const ctx = document.getElementById("teamChart").getContext("2d");
-    // teamData is now directly the team object
+    const ctxElement = document.getElementById("teamChart");
+    if (!ctxElement) { // 🔹 Defensive check for canvas element
+        console.error("Team chart canvas element not found.");
+        return;
+    }
+    const ctx = ctxElement.getContext("2d");
+
     const rounds = (teamData && Array.isArray(teamData.rounds)) ? teamData.rounds.map(r => r.round) : [];
     const scores = (teamData && Array.isArray(teamData.rounds)) ? teamData.rounds.map(r => r.average_score) : [];
 
@@ -134,9 +152,7 @@ function showTeamChart() {
             }
         });
     } else {
-        // Clear canvas if no data
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        // Optionally display a message on the canvas or below it
         ctx.font = "16px Arial";
         ctx.textAlign = "center";
         ctx.fillText("No team chart data available.", ctx.canvas.width / 2, ctx.canvas.height / 2);
@@ -145,7 +161,7 @@ function showTeamChart() {
     const teamInfoElement = document.getElementById("teamInfo");
     if (teamInfoElement) {
         const latest = (teamData && Array.isArray(teamData.rounds) && teamData.rounds.length > 0) ? teamData.rounds.at(-1) : null;
-        if (teamData && teamData.team_name) { // Check if teamData has basic info
+        if (teamData && teamData.team_name) {
             teamInfoElement.innerHTML = `
                 <strong>Team:</strong> ${teamData.team_name || 'N/A'}<br>
                 <strong>Members:</strong> ${teamData.members ? teamData.members.join(", ") : 'N/A'}<br>
@@ -161,8 +177,13 @@ function showTeamChart() {
 }
 
 function showSpeakerChart() {
-    const ctx = document.getElementById("speakerChart").getContext("2d");
-    // speakerData is now directly an array of combined speaker round objects
+    const ctxElement = document.getElementById("speakerChart");
+    if (!ctxElement) { // 🔹 Defensive check for canvas element
+        console.error("Speaker chart canvas element not found.");
+        return;
+    }
+    const ctx = ctxElement.getContext("2d");
+
     const labels = Array.isArray(speakerData) ? speakerData.map(d => d.round) : [];
     const scores = Array.isArray(speakerData) ? speakerData.map(d => d.score) : [];
 
@@ -182,9 +203,7 @@ function showSpeakerChart() {
             }
         });
     } else {
-        // Clear canvas if no data
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        // Optionally display a message on the canvas or below it
         ctx.font = "16px Arial";
         ctx.textAlign = "center";
         ctx.fillText("No speaker chart data available.", ctx.canvas.width / 2, ctx.canvas.height / 2);
@@ -193,7 +212,6 @@ function showSpeakerChart() {
 
 function showJudgeData() {
     const index = document.getElementById("judgeRoundDropdown").value;
-    // judgeData is now the full judge object
     const round = (judgeData && Array.isArray(judgeData.rounds) && judgeData.rounds[index]) ? judgeData.rounds[index] : null;
     let html = "";
     if (round) {
@@ -203,7 +221,6 @@ function showJudgeData() {
                 html += `👤 ${speaker.name || 'N/A'}: <strong>${speaker.score || 'N/A'}</strong><br>`;
             });
         }
-        // Display AI insights for the judge
         html += `<br><strong>AI Insights:</strong><br><em>${judgeData.ai_insights || 'No AI insights available for judge.'}</em>`;
 
     } else {
@@ -214,14 +231,7 @@ function showJudgeData() {
 
 // Utility for displaying messages (replaces alert)
 function displayMessageBox(title, message) {
-    // Implement a simple modal or div to show messages
-    // For now, let's just log to console if no modal is set up
     console.log(`Message Box - ${title}: ${message}`);
-    // In a real app, you'd create/show a div like:
-    // const msgBox = document.getElementById('messageBox');
-    // msgBox.querySelector('.title').innerText = title;
-    // msgBox.querySelector('.content').innerText = message;
-    // msgBox.style.display = 'block'; // Show the modal
 }
 
 window.onload = loadData;
