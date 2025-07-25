@@ -10,7 +10,7 @@ class AIIntegration:
         if not self.sarvam_api_key:
             raise ValueError("SARVAM_API_KEY environment variable not set.")
         
-        self.sarvam_api_url = "https://sarvam-ai-api.azurewebsites.net/v1/chat/completions"
+        self.sarvam_api_url = "https://sarvam_ai_api.azurewebsites.net/v1/chat/completions"
         self.headers = {
             "Authorization": f"Bearer {self.sarvam_api_key}",
             "Content-Type": "application/json",
