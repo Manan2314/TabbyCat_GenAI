@@ -7,7 +7,7 @@ import json
 from ai_integration import AIIntegration
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-CORS(app)
+CORS(app) # Ensure CORS is enabled for all origins for development, or specify your frontend origin
 
 # 🔹 Initialize an instance of your AIIntegration class
 ai_processor = AIIntegration()
@@ -29,7 +29,7 @@ def load_json(filename):
         print(f"Error: Data file '{filename}' not found at {file_path}.")
         return None
     except json.JSONDecodeError:
-        print(f"Error: Could not decode JSON from '{filename}'.")
+        print(f"Error: Could not decode JSON from '{filename}'. Please check its format.")
         return None
 
 # 🔹 Serve Frontend UI
@@ -46,11 +46,15 @@ def get_speakers():
         return jsonify({"error": "Speaker feedback data could not be loaded."}), 500
 
     processed_speakers = []
-    # Ensure data is treated as a list, even if it's a single object (though your JSON is an array)
-    data_list = data if isinstance(data, list) else [data]
+    
+    # Ensure `data_list` always holds an iterable for the loop
+    # Your speaker_feedback.json is an array, so this will correctly treat `data` as a list.
+    # If it were ever a single object, this handles it gracefully.
+    data_to_process = data if isinstance(data, list) else [data] 
 
-    for speaker_item in data_list:
+    for speaker_item in data_to_process: # Loop through each individual speaker entry (round data)
         # Generate AI insights for each speaker item (round performance)
+        # ai_processor.generate_speaker_feedback expects a single speaker_data dict
         insights = ai_processor.generate_speaker_feedback(speaker_item)
         
         # Combine the original speaker_item with its AI insights
@@ -71,6 +75,7 @@ def get_teams():
         return jsonify({"error": "Team summary data could not be loaded."}), 500
 
     # Generate AI insights for the entire team summary object
+    # ai_processor.generate_team_insights_realtime expects a single team_data object
     insights = ai_processor.generate_team_insights_realtime(data)
     
     # 🔹 Add AI insights directly to the team data object
@@ -90,6 +95,7 @@ def get_judges():
         return jsonify({"error": "Judge insights data could not be loaded."}), 500
 
     # Generate AI insights for the entire judge insights object
+    # ai_processor.analyze_judge_comprehensive expects a single judge_data object
     insights = ai_processor.analyze_judge_comprehensive(data)
     
     # 🔹 Add AI insights directly to the judge data object
