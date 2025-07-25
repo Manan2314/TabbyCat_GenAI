@@ -41,7 +41,7 @@ async function loadData() {
         if (motionAnalysisElement && Array.isArray(motionDataResponse)) {
             let motionHtml = "<h4>Available Motions:</h4><ul>";
             motionDataResponse.forEach(motion => {
-                motionHtml += `<li><strong>${motion.motion}</strong>: Gov Win Rate: ${motion.gov_win_rate}%, Opp Win Rate: ${motion.opp_win_rate}% - <em>${motion.insight}</em></li>`;
+                motionHtml += `<li><strong>${motion.motion || 'N/A'}</strong>: Gov Win Rate: ${motion.gov_win_rate || 'N/A'}%, Opp Win Rate: ${motion.opp_win_rate || 'N/A'}% - <em>${motion.insight || 'N/A'}</em></li>`;
             });
             motionHtml += "</ul>";
             motionAnalysisElement.innerHTML = motionHtml;
@@ -107,6 +107,7 @@ function showSpeakerData() {
     if (speakerInfoElement) {
         if (dataForSelectedRound) {
             const originalData = dataForSelectedRound;
+            // 🔹 AI insights is now an object with general_feedback and improvement_advice 🔹
             const aiInsights = dataForSelectedRound.ai_insights;
 
             speakerInfoElement.innerHTML = `
@@ -116,8 +117,9 @@ function showSpeakerData() {
                 <em>${originalData.feedback?.general_feedback || 'N/A'}</em><br>
                 <em>${originalData.feedback?.improvement_advice || 'N/A'}</em><br>
                 <br>
-                <strong>AI Insights:</strong><br>
-                <em>${aiInsights || 'No AI insights available.'}</em>
+                <strong>AI Insights (Refined):</strong><br>
+                <em>General: ${aiInsights?.general_feedback || 'No refined general feedback.'}</em><br>
+                <em>Improvement: ${aiInsights?.improvement_advice || 'No refined improvement advice.'}</em>
             `;
         } else {
             speakerInfoElement.innerHTML = "No speaker data available for this round.";
