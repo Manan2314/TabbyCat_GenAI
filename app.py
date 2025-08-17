@@ -109,6 +109,27 @@ def round_report():
     report = ai_processor.build_round_report(team, speakers, judge, motion, side)
     return jsonify({"report": report})
 
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+# Existing routes...
+
+@app.route('/clash')
+def clash_analysis():
+    # For now, just return dummy text (replace with AI logic later)
+    return jsonify({
+        "clash_analysis": "The major clash in this round is between economic development vs. environmental sustainability."
+    })
+
+@app.route('/strategy')
+def strategy_recommendations():
+    # For now, just return dummy text (replace with AI logic later)
+    return jsonify({
+        "strategy_recommendations": "Focus on weighing impacts, highlight your team's strongest contentions, and pre-empt likely POIs."
+    })
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
