@@ -1,33 +1,68 @@
 {
-  "team_name": "GD A",
-  "members": ["Manan Chaudhary", "Aarav Mehta"],
+  "team_name": "IIT Delhi Debate Society",
+  "members": ["Arjun Verma", "Aarav Mehta"],
+  "tournament": "Indian Debating League Championship",
+  "overall_ranking": 3,
+  "total_points": 18,
+  "win_rate": 0.75,
   "rounds": [
     {
       "round": "Round 1",
-      "average_score": 77.5,
-      "scores": {
-        "Manan Chaudhary": 78,
-        "Aarav Mehta": 77
-      },
-      "team_feedback": "A solid start with structured arguments and decent POI handling. Room to improve in stakeholder depth."
+      "motion": "This House believes that social media platforms should be held legally responsible for the mental health impacts of their algorithms",
+      "side": "Closing Government",
+      "result": "Win",
+      "average_score": 80,
+      "team_feedback": "Strong opening with novel arguments. Good coordination between speakers. Could improve on time management and POI handling.",
+      "opponents": "DU Debating Society",
+      "judges": ["Judge Arjun Mehta", "Judge Kavya Nair"]
     },
     {
       "round": "Round 2",
-      "average_score": 80,
-      "scores": {
-        "Manan Chaudhary": 81,
-        "Aarav Mehta": 79
-      },
-      "team_feedback": "Improved synergy between speakers, clearer splits, and strong engagement with the motion."
+      "motion": "This House would ban all forms of genetic enhancement in humans",
+      "side": "Opening Opposition",
+      "result": "Win",
+      "average_score": 83,
+      "team_feedback": "Excellent rebuttals and strategic positioning. Improved teamwork and better use of evidence. Strong closing arguments.",
+      "opponents": "IIM Bangalore Speakers",
+      "judges": ["Judge Rajesh Kumar", "Judge Anitha Rao"]
     },
     {
       "round": "Round 3",
-      "average_score": 83,
-      "scores": {
-        "Manan Chaudhary": 84,
-        "Aarav Mehta": 82
-      },
-      "team_feedback": "Excellent coordination and structure. Rebuttals were sharp and strategic, helping secure the round."
+      "motion": "This House believes that developing countries should prioritize economic growth over environmental protection",
+      "side": "Closing Opposition",
+      "result": "Loss",
+      "average_score": 76,
+      "team_feedback": "Good individual performances but lacked strategic coordination. Arguments were sound but didn't effectively counter government's framework.",
+      "opponents": "NLSIU Advocates",
+      "judges": ["Judge Srinivas Murthy", "Judge Deepa Joshi"]
+    },
+    {
+      "round": "Round 4",
+      "motion": "This House would require all political advertisements to be fact-checked by independent bodies before publication",
+      "side": "Opening Government",
+      "result": "Win",
+      "average_score": 85,
+      "team_feedback": "Outstanding performance. Clear definition, strong case building, and excellent teamwork. Best round so far with confident delivery.",
+      "opponents": "JNU Debate Forum",
+      "judges": ["Judge Pradeep Singh", "Judge Meera Gupta"]
     }
-  ]
+  ],
+  "strengths": [
+    "Strong individual speaking skills",
+    "Good use of evidence and examples",
+    "Improving coordination between speakers",
+    "Confident delivery and stage presence"
+  ],
+  "areas_for_improvement": [
+    "Time management during speeches",
+    "Strategic positioning against strong opposition",
+    "Consistent POI handling",
+    "Maintaining performance under pressure"
+  ],
+  "performance_trends": {
+    "score_trend": "Improving",
+    "consistency": "Moderate",
+    "peak_performance": "Round 4",
+    "lowest_performance": "Round 3"
+  }
 }
