@@ -1,14 +1,194 @@
 [
   {
-    "motion": "This House Would Ban Zoos",
-    "gov_win_rate": 62,
-    "opp_win_rate": 38,
-    "insight": "Gov teams generally win when focusing on animal rights and ethical frameworks."
+    "motion_id": 1,
+    "motion_text": "This House believes that social media platforms should be held legally responsible for the mental health impacts of their algorithms",
+    "round": "Round 1",
+    "category": "Technology & Society",
+    "difficulty": "Intermediate",
+    "time_limit": "7 minutes per speaker",
+    "format": "British Parliamentary",
+    "context": "With rising concerns about mental health among young people and the addictive nature of social media algorithms, this motion explores corporate responsibility in the digital age.",
+    "key_stakeholders": [
+      "Social media companies",
+      "Mental health professionals", 
+      "Young users and parents",
+      "Government regulators",
+      "Legal experts"
+    ],
+    "government_arguments": [
+      "Algorithms are deliberately designed to be addictive",
+      "Companies have duty of care to users",
+      "Financial incentives would drive safer platform design",
+      "Precedent exists in other industries (tobacco, pharmaceuticals)"
+    ],
+    "opposition_arguments": [
+      "Individual responsibility for platform usage",
+      "Technical difficulty in proving causation", 
+      "Risk of stifling innovation and free speech",
+      "Existing regulatory frameworks are sufficient"
+    ],
+    "winning_side": "Government",
+    "debate_quality": "High",
+    "judge_feedback": "Excellent technical debate with strong evidence from both sides. Government's framework on corporate responsibility was compelling."
   },
   {
-    "motion": "This House Supports Universal Basic Income",
-    "gov_win_rate": 48,
-    "opp_win_rate": 52,
-    "insight": "Opp tends to win by emphasizing economic feasibility and implementation gaps."
+    "motion_id": 2,
+    "motion_text": "This House would ban all forms of genetic enhancement in humans",
+    "round": "Round 2", 
+    "category": "Bioethics & Science",
+    "difficulty": "Advanced",
+    "time_limit": "7 minutes per speaker",
+    "format": "British Parliamentary",
+    "context": "As CRISPR and other gene-editing technologies advance, society faces complex ethical questions about human enhancement and equality.",
+    "key_stakeholders": [
+      "Medical researchers and biotechnology companies",
+      "Patients with genetic disorders",
+      "Ethicists and religious groups", 
+      "Future generations",
+      "Regulatory bodies"
+    ],
+    "government_arguments": [
+      "Risk of creating genetic inequality and 'designer babies'",
+      "Unknown long-term consequences for human gene pool",
+      "Violates human dignity and natural order",
+      "Could lead to discrimination against 'unenhanced' individuals"
+    ],
+    "opposition_arguments": [
+      "Could eliminate hereditary diseases and suffering",
+      "Individual autonomy and parental choice",
+      "Natural human evolution through technology",
+      "Regulation better than outright bans"
+    ],
+    "winning_side": "Opposition",
+    "debate_quality": "Excellent",
+    "judge_feedback": "Sophisticated philosophical debate. Opposition effectively balanced ethical concerns with practical benefits."
+  },
+  {
+    "motion_id": 3,
+    "motion_text": "This House believes that developing countries should prioritize economic growth over environmental protection",
+    "round": "Round 3",
+    "category": "Development & Environment", 
+    "difficulty": "Intermediate",
+    "time_limit": "7 minutes per speaker",
+    "format": "British Parliamentary",
+    "context": "The tension between immediate development needs and long-term environmental sustainability poses difficult choices for developing nations.",
+    "key_stakeholders": [
+      "Developing country governments",
+      "Local populations in poverty",
+      "Environmental activists",
+      "International development organizations",
+      "Global climate community"
+    ],
+    "government_arguments": [
+      "Immediate human needs outweigh future environmental concerns",
+      "Developed countries polluted during their industrialization",
+      "Economic growth enables future environmental investment",
+      "Moral imperative to lift people out of poverty"
+    ],
+    "opposition_arguments": [
+      "Environmental damage disproportionately affects the poor",
+      "Climate change threatens long-term development",
+      "Sustainable development models are viable",
+      "Global responsibility requires all nations to act"
+    ],
+    "winning_side": "Government",
+    "debate_quality": "Good",
+    "judge_feedback": "Compelling arguments on both sides. Government's focus on immediate human impact was persuasive."
+  },
+  {
+    "motion_id": 4,
+    "motion_text": "This House would require all political advertisements to be fact-checked by independent bodies before publication",
+    "round": "Round 4",
+    "category": "Politics & Media",
+    "difficulty": "Intermediate", 
+    "time_limit": "7 minutes per speaker",
+    "format": "British Parliamentary",
+    "context": "Concerns about misinformation in political campaigns have led to calls for greater oversight of political advertising and messaging.",
+    "key_stakeholders": [
+      "Political parties and candidates",
+      "Voters and general public",
+      "Media companies and platforms",
+      "Fact-checking organizations", 
+      "Electoral authorities"
+    ],
+    "government_arguments": [
+      "Protects democratic process from misinformation",
+      "Ensures informed voter decision-making",
+      "Creates level playing field for all candidates",
+      "Precedent exists in commercial advertising regulation"
+    ],
+    "opposition_arguments": [
+      "Threatens free speech and political expression",
+      "Risk of censorship and bias in fact-checking",
+      "Practical challenges in real-time verification", 
+      "Voters can evaluate claims themselves"
+    ],
+    "winning_side": "Government",
+    "debate_quality": "Very Good",
+    "judge_feedback": "Well-structured debate with clear frameworks. Government successfully addressed free speech concerns."
+  },
+  {
+    "motion_id": 5,
+    "motion_text": "This House would implement a universal basic income",
+    "round": "Round 5",
+    "category": "Economics & Social Policy",
+    "difficulty": "Advanced",
+    "time_limit": "7 minutes per speaker", 
+    "format": "British Parliamentary",
+    "context": "As automation threatens traditional employment and inequality grows, UBI has emerged as a potential solution to economic insecurity.",
+    "key_stakeholders": [
+      "Government and taxpayers",
+      "Workers in automated industries",
+      "Unemployed and underemployed individuals",
+      "Businesses and employers",
+      "Social welfare recipients"
+    ],
+    "government_arguments": [
+      "Provides economic security in changing job market",
+      "Reduces bureaucracy and welfare complexity", 
+      "Enables entrepreneurship and risk-taking",
+      "Addresses growing inequality and automation"
+    ],
+    "opposition_arguments": [
+      "Extremely costly and fiscally unsustainable",
+      "Reduces work incentives and productivity",
+      "Better to invest in education and job training",
+      "Could lead to inflation and economic distortion"
+    ],
+    "winning_side": "Opposition",
+    "debate_quality": "Excellent",
+    "judge_feedback": "High-level economic analysis from both sides. Opposition's fiscal arguments were particularly strong."
+  },
+  {
+    "motion_id": 6,
+    "motion_text": "This House believes that artificial intelligence development should be subject to international regulation",
+    "round": "Round 6",
+    "category": "Technology & Governance",
+    "difficulty": "Advanced",
+    "time_limit": "7 minutes per speaker",
+    "format": "British Parliamentary", 
+    "context": "Rapid AI development raises concerns about safety, ethics, and global competition, leading to calls for coordinated international oversight.",
+    "key_stakeholders": [
+      "AI researchers and tech companies",
+      "National governments and militaries",
+      "International organizations",
+      "Civil society and rights groups",
+      "Global citizens affected by AI"
+    ],
+    "government_arguments": [
+      "Prevents dangerous AI arms race between nations",
+      "Ensures ethical standards and safety protocols",
+      "Protects against misuse and dual-use technologies",
+      "Creates level playing field for global competition"
+    ],
+    "opposition_arguments": [
+      "Stifles innovation and technological progress",
+      "Enforcement challenges with sovereign nations",
+      "Risk of regulatory capture by established players",
+      "National security requires independent AI capabilities"
+    ],
+    "winning_side": "Government", 
+    "debate_quality": "Excellent",
+    "judge_feedback": "Sophisticated technical debate. Government effectively balanced innovation concerns with safety imperatives."
   }
 ]
