@@ -1,591 +1,239 @@
+let speakerData, teamData, judgeData;
+let speakerChart, teamChart;
 
-// script.js
-let speakerData, teamData, judgeData, motionData;
+// Define your backend API URL.
+// This should be the URL of your Render deployed Flask app.
+const API_BASE_URL = 'https://tabbycat-genai.onrender.com'; 
 
 async function loadData() {
-  try {
-    speakerData = await fetch("/speakers").then(res => res.json());
-    teamData = await fetch("/teams").then(res => res.json());
-    judgeData = await fetch("/judges").then(res => res.json());
-    motionData = await fetch("/motions").then(res => res.json());
-    
-    populateDropdowns();
-    showSpeakerChart();
-    await showTeamChart();
-    showMotionData();
-    
-    // Enhanced judge insight with AI
-    const judgeInsightElement = document.getElementById("judgeInsight");
-    judgeInsightElement.innerHTML = `
-      ${judgeData.overall_judging_insight}
-      <div class="ai-insights-section" style="margin-top: 15px;">
-        <h4>AI Judge Pattern Analysis <span class="loading">Generating...</span></h4>
-        <div id="aiOverallJudgeInsights" class="ai-insights">Loading overall judge insights...</div>
-      </div>
-    `;
-    
-    // Generate overall AI judge insights
-    const overallInsights = await getAIJudgeComprehensive(judgeData);
-    document.getElementById("aiOverallJudgeInsights").innerHTML = overallInsights;
-    document.querySelector("#judgeInsight .loading").style.display = "none";
-  } catch (error) {
-    console.error('Error loading data:', error);
-    document.body.innerHTML = '<div class="error">Error loading data. Please refresh the page.</div>';
-  }
+    try {
+        // Fetching from backend endpoints.
+        // These now directly receive the expected data structures.
+        speakerData = await fetch(`${API_BASE_URL}/speakers`).then(res => res.json());
+        teamData = await fetch(`${API_BASE_URL}/teams`).then(res => res.json());
+        judgeData = await fetch(`${API_BASE_URL}/judges`).then(res => res.json());
+
+        // Log fetched data for debugging
+        console.log("Fetched speakerData:", speakerData);
+        console.log("Fetched teamData:", teamData);
+        console.log("Fetched judgeData:", judgeData);
+
+        populateDropdowns();
+        showSpeakerChart();
+        showTeamChart();
+        
+        // Ensure judgeData and its ai_insights exist
+        const judgeInsightElement = document.getElementById("judgeInsight");
+        if (judgeInsightElement) {
+            if (judgeData && judgeData.ai_insights) {
+                judgeInsightElement.innerText = judgeData.ai_insights;
+            } else if (judgeData && judgeData.overall_judging_insight) {
+                judgeInsightElement.innerText = judgeData.overall_judging_insight;
+            } else {
+                console.warn("Judge insight not found in data from /judges endpoint.");
+                judgeInsightElement.innerText = "No overall judge insight available.";
+            }
+        }
+
+        // 🔹 Handle Motion Data Display 🔹
+        const motionDataResponse = await fetch(`${API_BASE_URL}/motions`).then(res => res.json());
+        const motionAnalysisElement = document.getElementById("motionData");
+        if (motionAnalysisElement && Array.isArray(motionDataResponse)) {
+            let motionHtml = "<h4>Available Motions:</h4><ul>";
+            motionDataResponse.forEach(motion => {
+                motionHtml += `<li><strong>${motion.motion || 'N/A'}</strong>: Gov Win Rate: ${motion.gov_win_rate || 'N/A'}%, Opp Win Rate: ${motion.opp_win_rate || 'N/A'}% - <em>${motion.insight || 'N/A'}</em></li>`;
+            });
+            motionHtml += "</ul>";
+            motionAnalysisElement.innerHTML = motionHtml;
+        } else if (motionAnalysisElement) {
+            motionAnalysisElement.innerHTML = "<p>No motion data available or invalid format.</p>";
+        }
+
+
+    } catch (err) {
+        console.error("Error loading data:", err);
+        displayMessageBox("Error", "There was an error loading the data from the server. Please try again later.");
+    }
 }
 
 function populateDropdowns() {
-  const roundDropdown = document.getElementById("roundDropdown");
-  const judgeRoundDropdown = document.getElementById("judgeRoundDropdown");
-  
-  speakerData.forEach((entry, index) => {
-    const opt = document.createElement("option");
-    opt.value = index;
-    opt.text = entry.round;
-    roundDropdown.add(opt);
-  });
-  
-  judgeData.rounds.forEach((round, index) => {
-    const opt = document.createElement("option");
-    opt.value = index;
-    opt.text = round.round;
-    judgeRoundDropdown.add(opt);
-  });
-  
-  showSpeakerData();
-  showJudgeData();
-}
+    const roundDropdown = document.getElementById("roundDropdown");
+    const judgeRoundDropdown = document.getElementById("judgeRoundDropdown");
+    roundDropdown.innerHTML = "";
+    judgeRoundDropdown.innerHTML = "";
 
-async function showSpeakerData() {
-  const index = document.getElementById("roundDropdown").value;
-  const data = speakerData[index];
-  const scores = speakerData.map(d => d.score);
-  
-  document.getElementById("speakerInfo").innerHTML = `
-    <div class="info-card">
-      <h3>${data.name} - ${data.team}</h3>
-      <div class="info-row">
-        <span class="label">Round:</span>
-        <span class="value">${data.round}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">Role:</span>
-        <span class="value">${data.role}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">Score:</span>
-        <span class="value score">${data.score}</span>
-      </div>
-      <div class="feedback-section">
-        <h4>Feedback</h4>
-        <div class="feedback-item positive">
-          <strong>General:</strong> ${data.feedback.general_feedback}
-        </div>
-        <div class="feedback-item improvement">
-          <strong>Improvement:</strong> ${data.feedback.improvement_advice}
-        </div>
-      </div>
-      <div class="ai-insights-section">
-        <h4>AI Insights <span class="loading">Generating...</span></h4>
-        <div id="aiSpeakerInsights" class="ai-insights">Loading AI insights...</div>
-      </div>
-      <div class="analytics-controls">
-        <button onclick="generateLiveStrategy('${data.name}')" class="ai-button">
-          Generate AI Strategy
-        </button>
-        <button onclick="generatePerformanceReport()" class="analytics-btn">
-          Performance Report
-        </button>
-      </div>
-    </div>
-  `;
-  
-  // Generate AI insights
-  const aiInsights = await getAISpeakerInsights(data.name, scores);
-  document.getElementById("aiSpeakerInsights").innerHTML = aiInsights;
-  document.querySelector(".loading").style.display = "none";
-}
-
-async function showTeamChart() {
-  const ctx = document.getElementById("teamChart").getContext("2d");
-  const rounds = teamData.rounds.map(r => r.round);
-  const scores = teamData.rounds.map(r => r.average_score);
-  
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: rounds,
-      datasets: [{
-        label: "Team Average Score",
-        data: scores,
-        borderColor: "#3498db",
-        backgroundColor: "rgba(52, 152, 219, 0.1)",
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: "#3498db",
-        pointBorderColor: "#2980b9",
-        pointHoverBackgroundColor: "#2980b9",
-        pointHoverBorderColor: "#1f5582"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top'
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: false,
-          min: 70,
-          max: 90
-        }
-      }
+    // speakerData is now directly an array of combined speaker round objects
+    if (Array.isArray(speakerData)) {
+        const uniqueRounds = [...new Set(speakerData.map(entry => entry.round))];
+        uniqueRounds.forEach((roundName, index) => {
+            const opt = document.createElement("option");
+            opt.value = roundName; // Use roundName as value for easier lookup
+            opt.text = roundName;
+            roundDropdown.add(opt);
+        });
+    } else {
+        console.error("speakerData is not an array:", speakerData);
     }
-  });
-  
-  const latest = teamData.rounds.at(-1);
-  document.getElementById("teamInfo").innerHTML = `
-    <div class="info-card">
-      <h3>${teamData.team_name}</h3>
-      <div class="info-row">
-        <span class="label">Members:</span>
-        <span class="value">${teamData.members.join(", ")}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">Latest Average:</span>
-        <span class="value score">${latest.average_score}</span>
-      </div>
-      <div class="feedback-section">
-        <h4>Latest Team Feedback</h4>
-        <div class="feedback-item">${latest.team_feedback}</div>
-      </div>
-      <div class="ai-insights-section">
-        <h4>AI Team Analysis <span class="loading">Generating...</span></h4>
-        <div id="aiTeamInsights" class="ai-insights">Loading AI team insights...</div>
-      </div>
-      <button onclick="generateTeamStrategy()" class="ai-button">
-        Generate Team Strategy
-      </button>
-    </div>
-  `;
-  
-  // Generate AI team insights
-  const aiInsights = await getAITeamInsights(teamData);
-  document.getElementById("aiTeamInsights").innerHTML = aiInsights;
-  document.querySelector("#teamInfo .loading").style.display = "none";
+
+    // judgeData is now the full judge object, and judgeData.rounds should be an array
+    if (judgeData && Array.isArray(judgeData.rounds)) {
+        judgeData.rounds.forEach((round, index) => {
+            const opt = document.createElement("option");
+            opt.value = index;
+            opt.text = round.round;
+            judgeRoundDropdown.add(opt);
+        });
+    } else {
+        console.error("judgeData or judgeData.rounds is not an array:", judgeData);
+    }
+
+    // Trigger display of initial data
+    showSpeakerData();
+    showJudgeData();
+}
+
+function showSpeakerData() {
+    const dropdown = document.getElementById("roundDropdown");
+    // Check if dropdown has options before trying to access selectedIndex
+    if (!dropdown || dropdown.options.length === 0) {
+        document.getElementById("speakerInfo").innerHTML = "No rounds available for speaker data.";
+        return;
+    }
+    const selectedRoundName = dropdown.options[dropdown.selectedIndex].value; // Use value (which is now roundName)
+    
+    const dataForSelectedRound = speakerData.find(item => item.round === selectedRoundName);
+
+    const speakerInfoElement = document.getElementById("speakerInfo");
+    if (speakerInfoElement) {
+        if (dataForSelectedRound) {
+            const originalData = dataForSelectedRound;
+            // 🔹 AI insights is now an object with general_feedback and improvement_advice 🔹
+            const aiInsights = dataForSelectedRound.ai_insights;
+
+            speakerInfoElement.innerHTML = `
+                <strong>Round:</strong> ${originalData.round || 'N/A'}<br>
+                <strong>Score:</strong> ${originalData.score || 'N/A'}<br>
+                <strong>Feedback:</strong><br>
+                <em>${originalData.feedback?.general_feedback || 'N/A'}</em><br>
+                <em>${originalData.feedback?.improvement_advice || 'N/A'}</em><br>
+                <br>
+                <strong>AI Insights (Refined):</strong><br>
+                <em>General: ${aiInsights?.general_feedback || 'No refined general feedback.'}</em><br>
+                <em>Improvement: ${aiInsights?.improvement_advice || 'No refined improvement advice.'}</em>
+            `;
+        } else {
+            speakerInfoElement.innerHTML = "No speaker data available for this round.";
+        }
+    }
+}
+
+function showTeamChart() {
+    const ctxElement = document.getElementById("teamChart");
+    if (!ctxElement) { // 🔹 Defensive check for canvas element
+        console.error("Team chart canvas element not found.");
+        return;
+    }
+    const ctx = ctxElement.getContext("2d");
+
+    const rounds = (teamData && Array.isArray(teamData.rounds)) ? teamData.rounds.map(r => r.round) : [];
+    const scores = (teamData && Array.isArray(teamData.rounds)) ? teamData.rounds.map(r => r.average_score) : [];
+
+    if (teamChart) teamChart.destroy(); // Clear old chart if exists
+
+    if (rounds.length > 0 && scores.length > 0) {
+        teamChart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: rounds,
+                datasets: [{
+                    label: "Team Average Score",
+                    data: scores,
+                    borderColor: "#2980b9",
+                    fill: false
+                }]
+            }
+        });
+    } else {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("No team chart data available.", ctx.canvas.width / 2, ctx.canvas.height / 2);
+    }
+
+    const teamInfoElement = document.getElementById("teamInfo");
+    if (teamInfoElement) {
+        const latest = (teamData && Array.isArray(teamData.rounds) && teamData.rounds.length > 0) ? teamData.rounds.at(-1) : null;
+        if (teamData && teamData.team_name) {
+            teamInfoElement.innerHTML = `
+                <strong>Team:</strong> ${teamData.team_name || 'N/A'}<br>
+                <strong>Members:</strong> ${teamData.members ? teamData.members.join(", ") : 'N/A'}<br>
+                ${latest ? `<strong>Latest Round Feedback:</strong><br>${latest.team_feedback || 'N/A'}` : 'No recent round feedback.'}
+                <br>
+                <strong>AI Insights:</strong><br>
+                <em>${teamData.ai_insights || 'No AI insights available.'}</em>
+            `;
+        } else {
+            teamInfoElement.innerHTML = "No team data available.";
+        }
+    }
 }
 
 function showSpeakerChart() {
-  const ctx = document.getElementById("speakerChart").getContext("2d");
-  const labels = speakerData.map(d => d.round);
-  const scores = speakerData.map(d => d.score);
-  
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: labels,
-      datasets: [{
-        label: "Speaker Score",
-        data: scores,
-        borderColor: "#e74c3c",
-        backgroundColor: "rgba(231, 76, 60, 0.1)",
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: "#e74c3c",
-        pointBorderColor: "#c0392b",
-        pointHoverBackgroundColor: "#c0392b",
-        pointHoverBorderColor: "#a93226"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top'
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: false,
-          min: 70,
-          max: 90
-        }
-      }
+    const ctxElement = document.getElementById("speakerChart");
+    if (!ctxElement) { // 🔹 Defensive check for canvas element
+        console.error("Speaker chart canvas element not found.");
+        return;
     }
-  });
-}
+    const ctx = ctxElement.getContext("2d");
 
-async function showJudgeData() {
-  const index = document.getElementById("judgeRoundDropdown").value;
-  const round = judgeData.rounds[index];
-  
-  let html = `
-    <div class="info-card">
-      <h3>${judgeData.judge_name} - ${round.round}</h3>
-      <div class="speakers-scored">
-  `;
-  
-  round.speakers_scored.forEach(speaker => {
-    html += `
-      <div class="speaker-score">
-        <span class="speaker-name">${speaker.name}</span>
-        <span class="score">${speaker.score}</span>
-      </div>
-    `;
-  });
-  
-  html += `
-      </div>
-      <div class="ai-insights-section">
-        <h4>AI Judge Analysis <span class="loading">Generating...</span></h4>
-        <div id="aiJudgeInsights" class="ai-insights">Loading comprehensive judge insights...</div>
-      </div>
-      <button onclick="generateJudgeStrategy()" class="ai-button">
-        Judge Adaptation Tips
-      </button>
-    </div>
-  `;
-  
-  document.getElementById("judgeInfo").innerHTML = html;
-  
-  // Generate AI judge insights
-  const aiInsights = await getAIJudgeComprehensive(judgeData);
-  document.getElementById("aiJudgeInsights").innerHTML = aiInsights;
-  document.querySelector("#judgeInfo .loading").style.display = "none";
-}
+    const labels = Array.isArray(speakerData) ? speakerData.map(d => d.round) : [];
+    const scores = Array.isArray(speakerData) ? speakerData.map(d => d.score) : [];
 
-function showMotionData() {
-  const motionSection = document.getElementById("motionData");
-  let html = '<div class="motions-container">';
-  
-  motionData.forEach(motion => {
-    const govAdvantage = motion.gov_win_rate > 55;
-    const balanceClass = Math.abs(motion.gov_win_rate - motion.opp_win_rate) < 10 ? 'balanced' : 
-                        govAdvantage ? 'gov-favored' : 'opp-favored';
-    
-    html += `
-      <div class="motion-card ${balanceClass}">
-        <h4>${motion.motion}</h4>
-        <div class="motion-stats">
-          <div class="win-rates">
-            <div class="win-rate gov">
-              <span class="label">Government:</span>
-              <div class="percentage-bar">
-                <div class="bar gov-bar" style="width: ${motion.gov_win_rate}%"></div>
-                <span class="percentage">${motion.gov_win_rate}%</span>
-              </div>
-            </div>
-            <div class="win-rate opp">
-              <span class="label">Opposition:</span>
-              <div class="percentage-bar">
-                <div class="bar opp-bar" style="width: ${motion.opp_win_rate}%"></div>
-                <span class="percentage">${motion.opp_win_rate}%</span>
-              </div>
-            </div>
-          </div>
-          <div class="motion-difficulty">
-            <span class="difficulty-label">Balance Score:</span>
-            <span class="difficulty-score ${balanceClass}">
-              ${Math.abs(motion.gov_win_rate - motion.opp_win_rate) < 10 ? 'Well Balanced' : 
-                govAdvantage ? 'Gov Favored' : 'Opp Favored'}
-            </span>
-          </div>
-        </div>
-        <div class="insight">
-          <strong>Strategic Insight:</strong> ${motion.insight}
-        </div>
-        <div class="ai-suggestion">
-          <strong>AI Enhancement Ready:</strong> 
-          <em>This motion can benefit from AI-generated debate strategies and argument frameworks.</em>
-        </div>
-      </div>
-    `;
-  });
-  
-  html += '</div>';
-  motionSection.innerHTML = html;
-}
+    if (speakerChart) speakerChart.destroy(); // Clear old chart if exists
 
-// Real-time AI integration functions
-async function generateAIInsights(endpoint, data) {
-  try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('AI API Error:', error);
-    return null;
-  }
-}
-
-async function getAISpeakerInsights(speakerName, scores, motion = '') {
-  const aiResponse = await generateAIInsights('/ai/analyze-speaker', {
-    speaker_name: speakerName,
-    scores: scores,
-    motion: motion
-  });
-  
-  if (aiResponse && aiResponse.status === 'success') {
-    // Display enhanced insights with analytics
-    if (aiResponse.insights.analytics) {
-      return formatEnhancedInsights(aiResponse.insights);
-    }
-    return aiResponse.insights;
-  }
-  return 'AI insights temporarily unavailable';
-}
-
-function formatEnhancedInsights(insights) {
-  const analytics = insights.analytics;
-  const aiAnalysis = insights.ai_analysis;
-  
-  return `
-    <div class="enhanced-insights">
-      <div class="analytics-summary">
-        <h5>Performance Analytics</h5>
-        <div class="analytics-grid">
-          <div class="metric">
-            <span class="metric-label">Average Score:</span>
-            <span class="metric-value">${analytics.avg_score.toFixed(1)}</span>
-          </div>
-          <div class="metric">
-            <span class="metric-label">Trend:</span>
-            <span class="metric-value trend-${analytics.trend}">${analytics.trend.toUpperCase()}</span>
-          </div>
-          <div class="metric">
-            <span class="metric-label">Consistency:</span>
-            <span class="metric-value">${analytics.consistency.toUpperCase()}</span>
-          </div>
-          <div class="metric">
-            <span class="metric-label">Percentile:</span>
-            <span class="metric-value">${analytics.percentile.toFixed(0)}th</span>
-          </div>
-        </div>
-      </div>
-      <div class="ai-analysis">
-        <h5>AI Analysis</h5>
-        <p>${aiAnalysis}</p>
-      </div>
-    </div>
-  `;
-}
-
-async function generatePerformanceReport() {
-  const button = event.target;
-  const originalText = button.innerHTML;
-  
-  try {
-    button.innerHTML = "Generating Report...";
-    button.disabled = true;
-    
-    const response = await fetch('/ai/performance-report', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        speaker_data: speakerData
-      })
-    });
-    
-    const data = await response.json();
-    
-    if (data && data.status === 'success' && data.report_chart) {
-      displayPerformanceReport(data.report_chart);
+    if (labels.length > 0 && scores.length > 0) {
+        speakerChart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Speaker Score",
+                    data: scores,
+                    borderColor: "#e67e22",
+                    fill: false
+                }]
+            }
+        });
     } else {
-      console.error('Performance report failed:', data);
-      showErrorMessage(`Failed to generate performance report: ${data.error || 'Unknown error'}`);
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("No speaker chart data available.", ctx.canvas.width / 2, ctx.canvas.height / 2);
     }
-  } catch (error) {
-    console.error('Failed to generate performance report:', error);
-    showErrorMessage('Network error while generating report. Please check your connection.');
-  } finally {
-    button.innerHTML = originalText;
-    button.disabled = false;
-  }
 }
 
-function showErrorMessage(message) {
-  const errorDiv = document.createElement('div');
-  errorDiv.className = 'error-message';
-  errorDiv.innerHTML = `
-    <div class="error-content">
-      <span class="error-icon">Warning</span>
-      <span class="error-text">${message}</span>
-      <button onclick="this.parentElement.parentElement.remove()" class="error-close">×</button>
-    </div>
-  `;
-  document.body.appendChild(errorDiv);
-  
-  // Auto-remove after 5 seconds
-  setTimeout(() => {
-    if (errorDiv.parentElement) {
-      errorDiv.remove();
+function showJudgeData() {
+    const index = document.getElementById("judgeRoundDropdown").value;
+    const round = (judgeData && Array.isArray(judgeData.rounds) && judgeData.rounds[index]) ? judgeData.rounds[index] : null;
+    let html = "";
+    if (round) {
+        html = `<strong>${round.round}</strong><br>`;
+        if (Array.isArray(round.speakers_scored)) {
+            round.speakers_scored.forEach(speaker => {
+                html += `👤 ${speaker.name || 'N/A'}: <strong>${speaker.score || 'N/A'}</strong><br>`;
+            });
+        }
+        html += `<br><strong>AI Insights:</strong><br><em>${judgeData.ai_insights || 'No AI insights available for judge.'}</em>`;
+
+    } else {
+        html = "No judge data available for this round.";
     }
-  }, 5000);
+    document.getElementById("judgeInfo").innerHTML = html;
 }
 
-function displayPerformanceReport(chartBase64) {
-  const reportSection = document.createElement('div');
-  reportSection.className = 'performance-report-section';
-  reportSection.innerHTML = `
-    <h3>Performance Analytics Report</h3>
-    <div class="report-chart">
-      <img src="data:image/png;base64,${chartBase64}" alt="Performance Report" style="max-width: 100%; height: auto;">
-    </div>
-    <button onclick="downloadReport('${chartBase64}')" class="download-btn">
-      Download Report
-    </button>
-  `;
-  
-  document.getElementById('main-content').appendChild(reportSection);
+// Utility for displaying messages (replaces alert)
+function displayMessageBox(title, message) {
+    console.log(`Message Box - ${title}: ${message}`);
 }
 
-function downloadReport(chartBase64) {
-  const link = document.createElement('a');
-  link.href = 'data:image/png;base64,' + chartBase64;
-  link.download = 'performance-report.png';
-  link.click();
-}
-
-async function getAIMotionStrategy(motion, side, teamStrengths = []) {
-  const aiResponse = await generateAIInsights('/ai/motion-strategy', {
-    motion: motion,
-    side: side,
-    team_strengths: teamStrengths
-  });
-  
-  if (aiResponse && aiResponse.status === 'success') {
-    return aiResponse.strategy;
-  }
-  return 'AI strategy generation temporarily unavailable';
-}
-
-async function getAIJudgeInsights(judgeHistory) {
-  const aiResponse = await generateAIInsights('/ai/judge-insights', {
-    judge_history: judgeHistory
-  });
-  
-  if (aiResponse && aiResponse.status === 'success') {
-    return aiResponse.insights;
-  }
-  return 'AI judge analysis temporarily unavailable';
-}
-
-async function getAITeamInsights(teamData) {
-  const aiResponse = await generateAIInsights('/ai/team-insights', {
-    team_data: teamData
-  });
-  
-  if (aiResponse && aiResponse.status === 'success') {
-    return aiResponse.insights;
-  }
-  return 'AI team analysis temporarily unavailable';
-}
-
-async function getAIJudgeComprehensive(judgeData) {
-  const aiResponse = await generateAIInsights('/ai/judge-comprehensive', {
-    judge_data: judgeData
-  });
-  
-  if (aiResponse && aiResponse.status === 'success') {
-    return aiResponse.insights;
-  }
-  return 'AI comprehensive judge analysis temporarily unavailable';
-}
-
-async function generateLiveStrategy(speakerName) {
-  const button = event.target;
-  button.innerHTML = "Generating...";
-  button.disabled = true;
-  
-  // Get current motion (simplified - you can enhance this)
-  const motions = motionData;
-  const randomMotion = motions[Math.floor(Math.random() * motions.length)];
-  
-  const strategy = await getAIMotionStrategy(
-    randomMotion.motion, 
-    "Government", 
-    ["Strong argumentation", "Good delivery"]
-  );
-  
-  // Display strategy in a modal or popup
-  showStrategyModal(strategy, randomMotion.motion);
-  
-  button.innerHTML = "Generate AI Strategy";
-  button.disabled = false;
-}
-
-function showStrategyModal(strategy, title, subtitle = '') {
-  const modal = document.createElement('div');
-  modal.className = 'strategy-modal';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>${title}</h3>
-        <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
-      </div>
-      <div class="modal-body">
-        ${subtitle ? `<h4>${subtitle}</h4>` : ''}
-        <div class="strategy-content">${strategy}</div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-}
-
-async function generateTeamStrategy() {
-  const button = event.target;
-  button.innerHTML = "Generating...";
-  button.disabled = true;
-  
-  const teamInsights = await getAITeamInsights(teamData);
-  showStrategyModal(teamInsights, "AI Team Strategy", `Team: ${teamData.team_name}`);
-  
-  button.innerHTML = "Generate Team Strategy";
-  button.disabled = false;
-}
-
-async function generateJudgeStrategy() {
-  const button = event.target;
-  button.innerHTML = "Generating...";
-  button.disabled = true;
-  
-  const judgeInsights = await getAIJudgeComprehensive(judgeData);
-  showStrategyModal(judgeInsights, "AI Judge Adaptation Strategy", `Judge: ${judgeData.judge_name}`);
-  
-  button.innerHTML = "Judge Adaptation Tips";
-  button.disabled = false;
-}
-
-// Add real-time AI features to motion data
-async function enhanceMotionWithAI() {
-  const motionCards = document.querySelectorAll('.motion-card');
-  motionCards.forEach(async (card, index) => {
-    const motion = motionData[index];
-    const aiButton = document.createElement('button');
-    aiButton.className = 'ai-strategy-btn';
-    aiButton.innerHTML = 'Get AI Strategy';
-    aiButton.onclick = async () => {
-      aiButton.innerHTML = 'Loading...';
-      const strategy = await getAIMotionStrategy(motion.motion, 'Government');
-      showStrategyModal(strategy, motion.motion);
-      aiButton.innerHTML = 'Get AI Strategy';
-    };
-    card.appendChild(aiButton);
-  });
-}
-
-window.onload = async () => {
-  await loadData();
-  enhanceMotionWithAI();
-};
+window.onload = loadData;
