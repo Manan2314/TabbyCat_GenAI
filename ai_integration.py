@@ -6,7 +6,7 @@ import re # Import the regular expression module
 class AIIntegration:
     def __init__(self):
         # Retrieve API key from environment variables
-        self.sarvam_api_key = os.getenv("SARVAM_API_KEY")
+        self.sarvam_api_key = os.getenv("sk_rppjleu4_EUrP7RoY8qUBq11pzgNnUk9c")
         if not self.sarvam_api_key:
             raise ValueError("SARVAM_API_KEY environment variable not set.")
         
