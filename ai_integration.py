@@ -1,345 +1,210 @@
-# AI Integration Module for TabbyCat (Sarvam-only)
-# Handles Sarvam AI calls + analytics utilities
-
-import requests
-import json
 import os
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import base64
-from io import BytesIO
+import json
+import requests
+import re # Import the regular expression module
 
 class AIIntegration:
     def __init__(self):
-        # On Render, set in Environment Variables
-        self.sarvam_api_key = os.getenv('SARVAM_API_KEY')
+        # Retrieve API key from environment variables
+        self.sarvam_api_key = os.getenv("SARVAM_API_KEY")
+        if not self.sarvam_api_key:
+            raise ValueError("SARVAM_API_KEY environment variable not set.")
+        
+        self.sarvam_api_url = "https://sarvam-ai-api.azurewebsites.net/v1/chat/completions"
+        self.headers = {
+            "Authorization": f"Bearer {self.sarvam_api_key}",
+            "Content-Type": "application/json",
+        }
 
-    # ---------------------------
-    # Core Sarvam caller (fixed)
-    # ---------------------------
-    def _call_sarvam(self, prompt, max_tokens=700, temperature=0.7):
-        """Sarvam AI API integration"""
+    def _call_sarvam_ai(self, prompt_messages, max_tokens=150, temperature=0.7):
+        """Helper to call Sarvam AI with structured messages."""
+        data = {
+            "messages": prompt_messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
         try:
-            if not self.sarvam_api_key:
-                return "Sarvam API key missing. Set SARVAM_API_KEY in environment."
+            response = requests.post(self.sarvam_api_url, headers=self.headers, json=data)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+            return response.json()
+        except requests.exceptions.HTTPError as http_err:
+            print(f"HTTP error occurred: {http_err} - {response.text}")
+            return {"error": f"HTTP error: {http_err}", "details": response.text}
+        except requests.exceptions.ConnectionError as conn_err:
+            print(f"Connection error occurred: {conn_err}")
+            return {"error": f"Connection error: {conn_err}"}
+        except requests.exceptions.Timeout as timeout_err:
+            print(f"Timeout error occurred: {timeout_err}")
+            return {"error": f"Timeout error: {timeout_err}"}
+        except requests.exceptions.RequestException as req_err:
+            print(f"An error occurred: {req_err}")
+            return {"error": f"Request error: {req_err}"}
+        except json.JSONDecodeError as json_err:
+            print(f"JSON decode error: {json_err} - Response: {response.text}")
+            return {"error": f"JSON decode error: {json_err}", "details": response.text}
 
-            headers = {
-                'Authorization': f'Bearer {self.sarvam_api_key}',
-                'Content-Type': 'application/json'
-            }
-
-            data = {
-                # 🔧 Fix per your logs: model must be 'sarvam-m'
-                'model': 'sarvam-m',
-                'messages': [{'role': 'user', 'content': prompt}],
-                'max_tokens': max_tokens,
-                'temperature': temperature
-            }
-
-            resp = requests.post(
-                'https://api.sarvam.ai/v1/chat/completions',
-                headers=headers,
-                json=data,
-                timeout=30
-            )
-            print(f"Sarvam API Status: {resp.status_code}")
-
-            if resp.status_code == 200:
-                result = resp.json()
-                return result['choices'][0]['message']['content']
-            else:
-                print(f"Sarvam API Error Response: {resp.text}")
-                return f"Sarvam Error ({resp.status_code}): {resp.text}"
-        except requests.exceptions.Timeout:
-            return "Sarvam request timeout."
-        except Exception as e:
-            print(f"Sarvam AI Error: {str(e)}")
-            return f"Sarvam exception: {str(e)}"
-
-    # ---------------------------
-    # Existing: Speaker feedback
-    # ---------------------------
-    def generate_speaker_feedback(self, speaker_data: dict):
-        """
-        Input example:
-        {
-          "name": "Alice",
-          "scores": [78, 81, 84],
-          "feedback_history": ["Good structure", "Better engagement"]
-        }
-        """
-        if not speaker_data:
-            return {"error": "No speaker data provided"}
-
-        name = speaker_data.get("name", "Speaker")
-        scores = speaker_data.get("scores", [])
-        analytics = self._generate_speaker_analytics(name, scores)
-
-        prompt = f"""
-        You are a debate coach AI. Using the analytics below, write precise, actionable feedback.
-
-        Speaker: {name}
-        Scores: {scores}
-        Analytics:
-        - Average Score: {analytics.get('avg_score')}
-        - Trend: {analytics.get('trend')}
-        - Consistency: {analytics.get('consistency')}
-        - Percentile: {analytics.get('percentile')}
-        - Improvement Rate: {analytics.get('improvement_rate')}%
-        Prior Feedback: {speaker_data.get('feedback_history', [])}
-
-        Output:
-        1) 3-5 bullet improvement points
-        2) A 2-sentence motivational note
-        3) 1 drill to practice before next round
-        """
-        if self.sarvam_api_key:
-            ai_text = self._call_sarvam(prompt)
-        else:
-            ai_text = self._fallback_speaker_insights(name, scores)
-
-        return {
-            "ai_feedback": ai_text,
-            "analytics": analytics,
-            "visualizations": self._create_speaker_visualizations(scores, name)
-        }
-
-    # ---------------------------
-    # NEW: Motion → Strategy
-    # ---------------------------
-    def generate_motion_strategy(self, motion: str, side: str, motion_meta: dict | None = None):
-        """
-        Returns AI strategy suggestions for a motion/side.
-        motion_meta can include prior win rates or tags like {"win_rate_gov":0.56,"themes":["ethics","safety"]}
-        """
-        meta_blob = json.dumps(motion_meta, indent=2) if motion_meta else "{}"
-        prompt = f"""
-        Motion: "{motion}"
-        Side: {side}
-        Context/Meta: {meta_blob}
-
-        Task: Produce a crisp, tournament-grade strategy.
-        Include:
-        - 3 strongest arguments (with warrants & examples)
-        - Likely opp rebuttals + your counters
-        - Stakeholders to emphasize
-        - Suggested 7-minute structure (time splits)
-        - 2 zinger lines for summary
-
-        Keep it concise and practical.
-        """
-        if self.sarvam_api_key:
-            return {"strategy": self._call_sarvam(prompt)}
-        return {"strategy": self._fallback_strategy(motion, side)}
-
-    # ---------------------------------
-    # NEW: Judge → Adaptation Guide
-    # ---------------------------------
-    def build_judge_adaptation_guide(self, judge_data: dict):
-        """
-        judge_data example structure (from your json):
-        {
-          "judge_name": "J1",
-          "rounds": [...],
-          "overall_judging_insight": "prefers structure"
-        }
-        """
-        quick = self._quick_judge_stats(judge_data)
-        prompt = f"""
-        Judge profile:
-        {json.dumps(judge_data, indent=2)}
-
-        Quick stats:
-        {json.dumps(quick, indent=2)}
-
-        Task: Give a practical adaptation guide for speakers judged by this person.
-        Include:
-        - What they reward/penalize (bullets)
-        - How to frame arguments for them
-        - Style tips (signposting, weighing, comparatives)
-        - 3 do's and 3 don'ts
-        """
-        if self.sarvam_api_key:
-            text = self._call_sarvam(prompt)
-        else:
-            text = self._fallback_comprehensive_judge_analysis(judge_data)
-        return {"adaptation_guide": text, "quick_stats": quick}
-
-    # -----------------------------------
-    # NEW: Round Report Card (One-click)
-    # -----------------------------------
-    def build_round_report(self, team_data: dict, speaker_list: list, judge_data: dict, motion: str, side: str):
-        """
-        Bundles everything for a post-round recap.
-        """
-        # Speaker mini-analytics
-        sp_analytics = []
-        for s in speaker_list or []:
-            name = s.get("name","Speaker")
-            scores = s.get("scores", [])
-            sp_analytics.append({
-                "name": name,
-                "analytics": self._generate_speaker_analytics(name, scores)
-            })
-
-        # Simple team delta (last vs first)
-        team_delta = self._simple_team_delta(team_data)
-
-        # AI summary
-        summary_prompt = f"""
-        Build a concise post-round report.
-
-        Motion: "{motion}" | Side: {side}
-
-        Team:
-        {json.dumps(team_data, indent=2)}
-
-        Speaker Analytics:
-        {json.dumps(sp_analytics, indent=2)}
-
-        Judge:
-        {json.dumps(judge_data, indent=2)}
-
-        Include:
-        - What went well / what to fix
-        - 3 targeted drills for next round
-        - 5-line narrative summary for coaches
-        - 2 key risks for the next matchup
-        """
-        if self.sarvam_api_key:
-            summary = self._call_sarvam(summary_prompt, max_tokens=900)
-        else:
-            summary = "Round report (fallback): solid structure, improve weighing and time mgmt."
-
-        # One simple chart (scores over rounds if available)
-        chart_b64 = self._team_chart(team_data)
-
-        return {
-            "summary": summary,
-            "speakers": sp_analytics,
-            "team_delta": team_delta,
-            "chart_b64": chart_b64
-        }
-
-    # ---------------------------
-    # Existing fallbacks
-    # ---------------------------
-    def _fallback_speaker_insights(self, name, scores):
-        trend = "improving" if len(scores) > 1 and scores[-1] > scores[0] else "stable"
-        avg = sum(scores)/len(scores) if scores else 0
-        return f"{name}'s performance is {trend}. Average {avg:.1f}. Focus on consistency and impact weighing."
-
-    def _fallback_strategy(self, motion, side):
-        return f"For {side} on '{motion}': define terms tight, run 3 prongs with clear impact calc, pre-empt opp with short blocks."
-
-    def _fallback_comprehensive_judge_analysis(self, judge_data):
-        rounds = judge_data.get('rounds', [])
-        if not rounds:
-            return "Judge analysis: No scoring data available."
-        all_scores = []
-        for r in rounds:
-            for sp in r.get('speakers_scored', []):
-                all_scores.append(sp.get('score', 0))
-        if not all_scores:
-            return "Judge analysis: Insufficient data."
-        avg_score = sum(all_scores)/len(all_scores)
-        return f"Judge tends to average {avg_score:.1f}. Prefer structured, comparative analysis and crisp weighing."
-
-    # ---------------------------
-    # Analytics helpers
-    # ---------------------------
-    def _generate_speaker_analytics(self, speaker_name, scores):
-        if not scores:
-            return {"error": "No scores"}
-        arr = np.array(scores)
-        if len(scores) > 1:
-            slope = np.polyfit(range(len(scores)), scores, 1)[0]
-            trend = "improving" if slope > 0.5 else "declining" if slope < -0.5 else "stable"
-            improvement_rate = ((scores[-1] - scores[0]) / scores[0]) * 100 if scores[0] else 0
-        else:
-            trend = "insufficient_data"
-            improvement_rate = 0
-        avg_score = float(np.mean(arr))
-        std_dev = float(np.std(arr))
-        consistency = "high" if std_dev < 3 else "moderate" if std_dev < 6 else "low"
-        percentile = float(min(95, max(5, ((avg_score - 70) / 20) * 100)))
-        return {
-            "avg_score": round(avg_score,2),
-            "std_dev": round(std_dev,2),
-            "trend": trend,
-            "consistency": consistency,
-            "percentile": round(percentile,1),
-            "improvement_rate": round(improvement_rate,1),
-            "score_range": f"{min(scores)}-{max(scores)}",
-            "total_rounds": len(scores)
-        }
-
-    def _create_speaker_visualizations(self, scores, speaker_name):
+    def _extract_content(self, response):
+        """Extracts content from AI response, handling errors."""
+        if isinstance(response, dict) and response.get("error"):
+            return f"AI Error: {response['error']}. Details: {response.get('details', 'N/A')}"
         try:
-            if not scores:
-                return {"error": "No scores for visualization"}
-            rounds = list(range(1, len(scores)+1))
-            fig, ax = plt.subplots(figsize=(8,5))
-            ax.plot(rounds, scores, marker='o', linewidth=2)
-            ax.set_title(f"{speaker_name} – Performance Trend")
-            ax.set_xlabel("Round"); ax.set_ylabel("Score")
-            ax.grid(True, alpha=0.3)
-            for i, sc in enumerate(scores):
-                ax.annotate(f'{sc}', (rounds[i], sc), textcoords="offset points", xytext=(0,10), ha='center', fontsize=9)
-            buf = BytesIO(); plt.tight_layout(); plt.savefig(buf, format='png', dpi=120, bbox_inches='tight', facecolor='white')
-            buf.seek(0)
-            b64 = base64.b64encode(buf.getvalue()).decode()
-            plt.close('all')
-            return {"trend_chart": b64, "chart_type":"performance_trend"}
-        except Exception as e:
-            print("Visualization error:", e)
-            return {"error": f"viz failed: {e}"}
+            return response.get("choices", [])[0].get("message", {}).get("content", "No content generated.")
+        except (IndexError, AttributeError):
+            return "Failed to extract content from AI response."
 
-    def _quick_judge_stats(self, judge_data):
-        rounds = judge_data.get('rounds', [])
-        scores = []
-        for r in rounds:
-            for sp in r.get('speakers_scored', []):
-                if isinstance(sp, dict):
-                    scores.append(sp.get('score', 0))
-        if not scores:
-            return {"avg": None, "spread": None, "tendency": "unknown"}
-        avg = sum(scores)/len(scores)
-        spread = max(scores) - min(scores)
-        tendency = "low-scorer" if avg < 72 else "mid-scorer" if avg < 78 else "high-scorer"
-        return {"avg": round(avg,1), "spread": spread, "tendency": tendency}
+    # 🔹 NEW HELPER FUNCTION TO PARSE AI'S CONCISE FEEDBACK 🔹
+    def _parse_ai_feedback_output(self, ai_response_string):
+        """Parses the AI's string output into a dictionary."""
+        general_feedback_match = re.search(r'general_feedback: "(.*?)"', ai_response_string, re.DOTALL)
+        improvement_advice_match = re.search(r'improvement_advice: "(.*?)"', ai_response_string, re.DOTALL)
 
-    def _simple_team_delta(self, team_data):
-        """Compare first and last round averages if present."""
-        rounds = team_data.get('rounds', [])
-        if not rounds:
-            return {"delta": 0, "start": None, "end": None}
-        start = rounds[0].get('average_score', None)
-        end = rounds[-1].get('average_score', None)
-        if isinstance(start, (int,float)) and isinstance(end, (int,float)):
-            return {"delta": round(end - start, 2), "start": start, "end": end}
-        return {"delta": 0, "start": start, "end": end}
+        return {
+            "general_feedback": general_feedback_match.group(1).strip() if general_feedback_match else "No general feedback generated.",
+            "improvement_advice": improvement_advice_match.group(1).strip() if improvement_advice_match else "No improvement advice generated."
+        }
 
-    def _team_chart(self, team_data):
-        """Simple chart: team avg per round (if available) -> base64"""
-        rounds = team_data.get('rounds', [])
-        if not rounds:
-            return None
-        xs, ys = [], []
-        for i, r in enumerate(rounds, start=1):
-            xs.append(i)
-            ys.append(r.get('average_score', None))
-        if not any(isinstance(y,(int,float)) for y in ys):
-            return None
-        fig, ax = plt.subplots(figsize=(7,4))
-        ax.plot(xs, ys, marker='o', linewidth=2)
-        ax.set_title("Team Average by Round"); ax.set_xlabel("Round"); ax.set_ylabel("Avg Score")
-        ax.grid(True, alpha=0.3)
-        buf = BytesIO(); plt.tight_layout(); plt.savefig(buf, format='png', dpi=120, bbox_inches='tight', facecolor='white')
-        buf.seek(0)
-        b64 = base64.b64encode(buf.getvalue()).decode()
-        plt.close('all')
-        return b64
+
+    def generate_speaker_feedback(self, speaker_data):
+        """
+        Generates concise, refined speaker feedback based on judge comments.
+        The AI refines existing feedback, not a raw judge_comment from outside.
+        """
+        name = speaker_data.get('name', 'N/A')
+        role = speaker_data.get('role', 'N/A')
+        score = speaker_data.get('score', 'N/A')
+        
+        # Combine existing general feedback and improvement advice for the AI to refine
+        existing_general_feedback = speaker_data.get('feedback', {}).get('general_feedback', '')
+        existing_improvement_advice = speaker_data.get('feedback', {}).get('improvement_advice', '')
+        
+        # Construct the judge_comment by combining existing feedback
+        # This is what the AI will 'rewrite'
+        combined_judge_comment = f"General: {existing_general_feedback}. Improvement: {existing_improvement_advice}."
+        
+        # 🔹 YOUR NEW PROMPT IS HERE 🔹
+        prompt_text = f"""You are an AI assistant helping students improve at debating by refining judge feedback.
+You will be given a speaker's name, role, and the raw comment from the adjudicator.
+Your job is to rewrite the judge’s verdict in a short, crisp, and logical way that:
+
+- Summarizes what went well
+- Gives clear improvement advice
+- Keeps the tone constructive and helpful
+
+Format your output like this:
+general_feedback: "..."
+improvement_advice: "..."
+
+Make sure both lines are concise (1-2 sentences max). Do not repeat points across sections. Keep the language simple and student-friendly.
+
+Input:
+{{
+"name": "{name}",
+"role": "{role}",
+"score": {score},
+"judge_comment": "{combined_judge_comment}"
+}}
+"""
+        messages = [{"role": "user", "content": prompt_text}]
+
+        response_json = self._call_sarvam_ai(messages, max_tokens=150, temperature=0.5) # Adjusted max_tokens and temp for conciseness
+        ai_raw_content = self._extract_content(response_json)
+
+        # 🔹 Parse the AI's specific output format 🔹
+        parsed_feedback = self._parse_ai_feedback_output(ai_raw_content)
+        return parsed_feedback
+
+
+    def generate_team_insights_realtime(self, team_data):
+        """Analyzes team performance data."""
+        team_name = team_data.get('team_name', 'N/A')
+        members = ", ".join(team_data.get('members', []))
+        rounds_summary = []
+        for r in team_data.get('rounds', []):
+            rounds_summary.append(f"Round {r.get('round')}: Average Score {r.get('average_score')}, Feedback: {r.get('team_feedback', 'N/A')}")
+        
+        prompt_text = f"""Analyze the performance of team {team_name} with members {members}.
+        Summary of rounds: {'; '.join(rounds_summary)}.
+        Provide a concise overall assessment of their strengths, weaknesses, and a key area for improvement based on their trends. Keep it to 3-4 sentences."""
+        
+        messages = [{"role": "user", "content": prompt_text}]
+        response_json = self._call_sarvam_ai(messages, max_tokens=150, temperature=0.6)
+        return self._extract_content(response_json)
+
+    def analyze_judge_comprehensive(self, judge_data):
+        """Analyzes a judge's patterns and provides insights."""
+        judge_name = judge_data.get('judge_name', 'N/A')
+        judge_style = judge_data.get('judge_style', 'N/A')
+        overall_insight = judge_data.get('overall_judging_insight', 'N/A')
+        
+        rounds_scored_summary = []
+        for r in judge_data.get('rounds', []):
+            speakers_scores = ", ".join([f"{s.get('name')}: {s.get('score')}" for s in r.get('speakers_scored', [])])
+            rounds_scored_summary.append(f"Round {r.get('round')}: Speakers scored: {speakers_scores}.")
+
+        prompt_text = f"""Analyze the judging patterns of {judge_name}.
+        Judge Style: {judge_style}.
+        Overall Insight: {overall_insight}.
+        Rounds Scored Summary: {'; '.join(rounds_scored_summary)}.
+        
+        Provide a concise, 2-3 sentence summary of their judging tendencies, including any biases or notable patterns. Focus on constructive observations for teams debating in front of this judge."""
+        
+        messages = [{"role": "user", "content": prompt_text}]
+        response_json = self._call_sarvam_ai(messages, max_tokens=120, temperature=0.6)
+        return self._extract_content(response_json)
+
+# Example usage (for testing locally, remove when deploying)
+if __name__ == "__main__":
+    # Ensure SARVAM_API_KEY is set in your environment
+    # os.environ["SARVAM_API_KEY"] = "YOUR_SARVAM_API_KEY" # <--- Set your actual API Key for local testing
+
+    try:
+        ai = AIIntegration()
+
+        # Test Speaker Feedback
+        test_speaker_data = {
+            "name": "Manan Chaudhary",
+            "team": "GD A",
+            "role": "Closing Government - 1st Speaker",
+            "round": "Round 1",
+            "score": 78,
+            "feedback": {
+                "general_feedback": "Your arguments were novel and well-structured.",
+                "improvement_advice": "Try to back your claims with stronger data and clearer links to the motion."
+            }
+        }
+        speaker_feedback = ai.generate_speaker_feedback(test_speaker_data)
+        print("\n--- Speaker Feedback ---")
+        print(f"General Feedback: {speaker_feedback['general_feedback']}")
+        print(f"Improvement Advice: {speaker_feedback['improvement_advice']}")
+
+        # Test Team Insights
+        test_team_data = {
+            "team_name": "GD A",
+            "members": ["Manan Chaudhary", "Aarav Mehta"],
+            "rounds": [
+                {"round": "Round 1", "average_score": 79, "team_feedback": "Strong opening, good teamwork."},
+                {"round": "Round 2", "average_score": 81, "team_feedback": "Improved rebuttals, struggled with POIs."},
+            ]
+        }
+        team_insights = ai.generate_team_insights_realtime(test_team_data)
+        print("\n--- Team Insights ---")
+        print(team_insights)
+
+        # Test Judge Analysis
+        test_judge_data = {
+            "judge_name": "Arjun Mehta",
+            "judge_style": "Strict, focuses on logical consistency",
+            "overall_judging_insight": "Tends to reward clear argumentation over rhetoric.",
+            "rounds": [
+                {"round": "Round 1", "speakers_scored": [{"name": "Speaker A", "score": 75}, {"name": "Speaker B", "score": 80}]},
+                {"round": "Round 2", "speakers_scored": [{"name": "Speaker C", "score": 78}, {"name": "Speaker D", "score": 82}]},
+            ]
+        }
+        judge_insights = ai.analyze_judge_comprehensive(test_judge_data)
+        print("\n--- Judge Insights ---")
+        print(judge_insights)
+
+    except ValueError as e:
+        print(f"Configuration Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred during AI integration test: {e}")
