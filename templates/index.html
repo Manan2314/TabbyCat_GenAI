@@ -1,76 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TabbyCat AI Insights</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
-</head>
-<body>
-    <header>
-        <h1>Debater Insights Dashboard</h1>
-        <p class="subtitle">Advanced analytics for competitive debate performance</p>
-    </header>
-
-    <main class="dashboard">
-        <div class="section">
-            <div class="section-header">
-                <h2>Speaker Performance</h2>
-                <select id="roundDropdown" onchange="showSpeakerData()"></select>
-            </div>
-            <div id="speakerInfo"></div>
-            <div class="chart-container">
-                <canvas id="speakerChart"></canvas>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <h2>Team Analytics</h2>
-            </div>
-            <div id="teamInfo"></div>
-            <div class="chart-container">
-                <canvas id="teamChart"></canvas>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <h2>Judge Analytics</h2>
-                <select id="judgeRoundDropdown" onchange="showJudgeData()"></select>
-            </div>
-            <div id="judgeInfo"></div>
-            <div class="judge-insight">
-                <h4>Overall Judging Pattern</h4>
-                <p id="judgeInsight"></p>
-            </div>
-        </div>
-
-        <div class="section">
-  <div class="section-header">
-    <h2>AI Strategy (Motion)</h2>
-  </div>
-  <pre id="motionStrategy" class="preblock"></pre>
+<div>
+  <h3>Team Analysis</h3>
+  <textarea id="teamInput" placeholder="Enter team details..."></textarea>
+  <button id="teamBtn">Analyze Team</button>
+  <div id="teamOutput"></div>
 </div>
 
-<div class="section">
-  <div class="section-header">
-    <h2>Round Report Card</h2>
-  </div>
-  <pre id="roundReport" class="preblock"></pre>
-  <div class="chart-container"><img id="reportChart" style="max-width:100%"/></div>
+<div>
+  <h3>Speaker Analysis</h3>
+  <textarea id="speakerInput" placeholder="Enter speaker details..."></textarea>
+  <button id="speakerBtn">Analyze Speaker</button>
+  <div id="speakerOutput"></div>
 </div>
 
+<div>
+  <h3>Judge Analysis</h3>
+  <textarea id="judgeInput" placeholder="Enter judge details..."></textarea>
+  <button id="judgeBtn">Analyze Judge</button>
+  <div id="judgeOutput"></div>
+</div>
 
-        <div class="section">
-            <div class="section-header">
-                <h2>Motion Analytics</h2>
-            </div>
-            <div id="motionData"></div>
-        </div>
-    </main>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>
+<div>
+  <h3>Motion Analysis</h3>
+  <textarea id="motionInput" placeholder="Enter debate motion..."></textarea>
+  <button id="motionBtn">Analyze Motion</button>
+  <div id="motionOutput"></div>
+</div>
