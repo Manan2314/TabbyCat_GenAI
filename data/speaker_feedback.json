@@ -1,35 +1,90 @@
 [
   {
-    "name": "Manan Chaudhary",
-    "team": "GD A",
+    "name": "Arjun Verma",
+    "team": "IIT Delhi Debate Society",
     "role": "Closing Government - 1st Speaker",
     "round": "Round 1",
     "score": 78,
     "feedback": {
-      "general_feedback": "Your arguments were novel and well-structured.",
-      "improvement_advice": "Try to back your claims with stronger data and clearer links to the motion."
+      "general_feedback": "Your arguments were novel and well-structured. You demonstrated excellent understanding of the motion and provided compelling evidence to support your stance.",
+      "improvement_advice": "Try to back your claims with stronger data and clearer links to the motion. Work on maintaining eye contact with the judges and vary your vocal tone for better engagement."
     }
   },
   {
-    "name": "Manan Chaudhary",
-    "team": "GD A",
-    "role": "Closing Government - 1st Speaker",
+    "name": "Aarav Mehta",
+    "team": "IIT Delhi Debate Society",
+    "role": "Closing Government - 2nd Speaker",
+    "round": "Round 1",
+    "score": 82,
+    "feedback": {
+      "general_feedback": "Excellent rebuttals and strong closing arguments. You effectively dismantled opposition points and reinforced your team's case with clarity.",
+      "improvement_advice": "Focus on time management during your speech. Some points felt rushed towards the end. Consider using more varied examples to illustrate your arguments."
+    }
+  },
+  {
+    "name": "Priya Sharma",
+    "team": "DU Debating Society",
+    "role": "Opening Opposition - 1st Speaker",
+    "round": "Round 1",
+    "score": 85,
+    "feedback": {
+      "general_feedback": "Outstanding delivery and argumentation. Your opening was compelling and set a strong foundation for your team's case. Excellent use of statistics and real-world examples.",
+      "improvement_advice": "Work on acknowledging potential weaknesses in your case proactively. This shows awareness and strengthens your overall argument rather than leaving gaps for opponents."
+    }
+  },
+  {
+    "name": "Rohan Gupta",
+    "team": "DU Debating Society",
+    "role": "Opening Opposition - 2nd Speaker",
+    "round": "Round 1",
+    "score": 79,
+    "feedback": {
+      "general_feedback": "Good substantive content and logical flow. You built well upon your partner's arguments and provided additional depth to your team's position.",
+      "improvement_advice": "Improve your POI handling - some responses were too brief. Also work on projecting confidence through body language and vocal delivery."
+    }
+  },
+  {
+    "name": "Ananya Iyer",
+    "team": "IIM Bangalore Speakers",
+    "role": "Opening Government - 1st Speaker",
+    "round": "Round 2",
+    "score": 88,
+    "feedback": {
+      "general_feedback": "Exceptional performance with clear structure and powerful delivery. Your definition was precise and your arguments were both logical and emotionally compelling.",
+      "improvement_advice": "Consider addressing potential opposition arguments more thoroughly in your opening to strengthen your team's defensive position."
+    }
+  },
+  {
+    "name": "Karthik Reddy",
+    "team": "IIM Bangalore Speakers",
+    "role": "Opening Government - 2nd Speaker",
+    "round": "Round 2",
+    "score": 84,
+    "feedback": {
+      "general_feedback": "Strong analytical skills and good use of evidence. You effectively supported your team's case with well-researched examples and logical reasoning.",
+      "improvement_advice": "Work on making your delivery more dynamic. While your content is strong, varying your pace and tone would make your speech more engaging."
+    }
+  },
+  {
+    "name": "Sneha Patel",
+    "team": "NLSIU Advocates",
+    "role": "Closing Opposition - 1st Speaker",
     "round": "Round 2",
     "score": 81,
     "feedback": {
-      "general_feedback": "Improved engagement with POIs and more persuasive delivery.",
-      "improvement_advice": "Stakeholder impact analysis could be deeper in rebuttals."
+      "general_feedback": "Strong logical framework and excellent point-by-point rebuttals. You maintained consistency throughout your speech and linked back to core principles effectively.",
+      "improvement_advice": "Work on incorporating more contemporary examples to make your arguments more relatable. Also focus on varying your vocal delivery for better audience engagement."
     }
   },
   {
-    "name": "Manan Chaudhary",
-    "team": "GD A",
-    "role": "Closing Government - 1st Speaker",
-    "round": "Round 3",
-    "score": 84,
+    "name": "Vikram Singh",
+    "team": "NLSIU Advocates",
+    "role": "Closing Opposition - 2nd Speaker",
+    "round": "Round 2",
+    "score": 86,
     "feedback": {
-      "general_feedback": "Very strong clash identification and smooth structure.",
-      "improvement_advice": "Try to pace delivery better in summary speech to emphasize key takeaways."
+      "general_feedback": "Brilliant closing with powerful rhetoric and strong impact analysis. You successfully synthesized the debate and provided compelling reasons for your side's victory.",
+      "improvement_advice": "Consider spending more time on direct clash with government arguments rather than just extending your own case. This would strengthen your position significantly."
     }
   }
 ]
