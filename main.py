@@ -7,7 +7,7 @@ app = Flask(__name__, static_folder='.', static_url_path='')
 
 # Utility function to read JSON files
 def load_json(filename):
-    with open(f"Data/{filename}", "r") as file:
+    with open(f"data/{filename}", "r") as file:
         return json.load(file)
 
 @app.route("/")
