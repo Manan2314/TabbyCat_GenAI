@@ -9,7 +9,7 @@ class AIIntegration:
         self.sarvam_api_key = os.getenv("SARVAM_API_KEY")
         if not self.sarvam_api_key:
             raise ValueError("SARVAM_API_KEY environment variable not set.")
-        
+
         self.sarvam_api_url = "https://sarvam-ai-api.azurewebsites.net/v1/chat/completions"
         self.headers = {
             "Authorization": f"Bearer {self.sarvam_api_key}",
@@ -63,7 +63,6 @@ class AIIntegration:
             "improvement_advice": improvement_advice_match.group(1).strip() if improvement_advice_match else "No improvement advice generated."
         }
 
-
     def generate_speaker_feedback(self, speaker_data):
         """
         Generates concise, refined speaker feedback based on judge comments.
@@ -72,19 +71,19 @@ class AIIntegration:
         name = speaker_data.get('name', 'N/A')
         role = speaker_data.get('role', 'N/A')
         score = speaker_data.get('score', 'N/A')
-        
+
         # Combine existing general feedback and improvement advice for the AI to refine
         existing_general_feedback = speaker_data.get('feedback', {}).get('general_feedback', '')
         existing_improvement_advice = speaker_data.get('feedback', {}).get('improvement_advice', '')
-        
+
         # Construct the judge_comment by combining existing feedback
         # This is what the AI will 'rewrite'
         combined_judge_comment = f"General: {existing_general_feedback}. Improvement: {existing_improvement_advice}."
-        
+
         # 🔹 YOUR NEW PROMPT IS HERE 🔹
         prompt_text = f"""You are an AI assistant helping students improve at debating by refining judge feedback.
 You will be given a speaker's name, role, and the raw comment from the adjudicator.
-Your job is to rewrite the judge’s verdict in a short, crisp, and logical way that:
+Your job is to rewrite the judge's verdict in a short, crisp, and logical way that:
 
 - Summarizes what went well
 - Gives clear improvement advice
@@ -113,7 +112,6 @@ Input:
         parsed_feedback = self._parse_ai_feedback_output(ai_raw_content)
         return parsed_feedback
 
-
     def generate_team_insights_realtime(self, team_data):
         """Analyzes team performance data."""
         team_name = team_data.get('team_name', 'N/A')
@@ -121,11 +119,11 @@ Input:
         rounds_summary = []
         for r in team_data.get('rounds', []):
             rounds_summary.append(f"Round {r.get('round')}: Average Score {r.get('average_score')}, Feedback: {r.get('team_feedback', 'N/A')}")
-        
+
         prompt_text = f"""Analyze the performance of team {team_name} with members {members}.
         Summary of rounds: {'; '.join(rounds_summary)}.
         Provide a concise overall assessment of their strengths, weaknesses, and a key area for improvement based on their trends. Keep it to 3-4 sentences."""
-        
+
         messages = [{"role": "user", "content": prompt_text}]
         response_json = self._call_sarvam_ai(messages, max_tokens=150, temperature=0.6)
         return self._extract_content(response_json)
@@ -135,7 +133,7 @@ Input:
         judge_name = judge_data.get('judge_name', 'N/A')
         judge_style = judge_data.get('judge_style', 'N/A')
         overall_insight = judge_data.get('overall_judging_insight', 'N/A')
-        
+
         rounds_scored_summary = []
         for r in judge_data.get('rounds', []):
             speakers_scores = ", ".join([f"{s.get('name')}: {s.get('score')}" for s in r.get('speakers_scored', [])])
@@ -145,9 +143,9 @@ Input:
         Judge Style: {judge_style}.
         Overall Insight: {overall_insight}.
         Rounds Scored Summary: {'; '.join(rounds_scored_summary)}.
-        
+
         Provide a concise, 2-3 sentence summary of their judging tendencies, including any biases or notable patterns. Focus on constructive observations for teams debating in front of this judge."""
-        
+
         messages = [{"role": "user", "content": prompt_text}]
         response_json = self._call_sarvam_ai(messages, max_tokens=120, temperature=0.6)
         return self._extract_content(response_json)
@@ -162,7 +160,7 @@ if __name__ == "__main__":
 
         # Test Speaker Feedback
         test_speaker_data = {
-            "name": "Manan Chaudhary",
+            "name": "Arjun Verma",
             "team": "GD A",
             "role": "Closing Government - 1st Speaker",
             "round": "Round 1",
@@ -180,10 +178,10 @@ if __name__ == "__main__":
         # Test Team Insights
         test_team_data = {
             "team_name": "GD A",
-            "members": ["Manan Chaudhary", "Aarav Mehta"],
-            "rounds": [
-                {"round": "Round 1", "average_score": 79, "team_feedback": "Strong opening, good teamwork."},
-                {"round": "Round 2", "average_score": 81, "team_feedback": "Improved rebuttals, struggled with POIs."},
+            "members": ["Arjun Verma", "Aarav Mehta"],
+            "rounds": [\
+                {"round": "Round 1", "average_score": 79, "team_feedback": "Strong opening, good teamwork."},\
+                {"round": "Round 2", "average_score": 81, "team_feedback": "Improved rebuttals, struggled with POIs."},\
             ]
         }
         team_insights = ai.generate_team_insights_realtime(test_team_data)
@@ -195,9 +193,9 @@ if __name__ == "__main__":
             "judge_name": "Arjun Mehta",
             "judge_style": "Strict, focuses on logical consistency",
             "overall_judging_insight": "Tends to reward clear argumentation over rhetoric.",
-            "rounds": [
-                {"round": "Round 1", "speakers_scored": [{"name": "Speaker A", "score": 75}, {"name": "Speaker B", "score": 80}]},
-                {"round": "Round 2", "speakers_scored": [{"name": "Speaker C", "score": 78}, {"name": "Speaker D", "score": 82}]},
+            "rounds": [\
+                {"round": "Round 1", "speakers_scored": [{"name": "Speaker A", "score": 75}, {"name": "Speaker B", "score": 80}]},\
+                {"round": "Round 2", "speakers_scored": [{"name": "Speaker C", "score": 78}, {"name": "Speaker D", "score": 82}]},\
             ]
         }
         judge_insights = ai.analyze_judge_comprehensive(test_judge_data)
