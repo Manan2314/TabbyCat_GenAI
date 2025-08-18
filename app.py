@@ -46,23 +46,23 @@ def get_speakers():
         return jsonify({"error": "Speaker feedback data could not be loaded."}), 500
 
     processed_speakers = []
-    
+
     # Ensure `data_list` always holds an iterable for the loop
     # Your speaker_feedback.json is an array, so this will correctly treat `data` as a list.
     # If it were ever a single object, this handles it gracefully.
-    data_to_process = data if isinstance(data, list) else [data] 
+    data_to_process = data if isinstance(data, list) else [data]
 
     for speaker_item in data_to_process: # Loop through each individual speaker entry (round data)
         # Generate AI insights for each speaker item (round performance)
         # ai_processor.generate_speaker_feedback expects a single speaker_data dict
         insights = ai_processor.generate_speaker_feedback(speaker_item)
-        
+
         # Combine the original speaker_item with its AI insights
         # This creates a new dictionary for each round's speaker data + its insights
         combined_item = speaker_item.copy() # Make a copy to avoid modifying original loaded data
         combined_item['ai_insights'] = insights # Add AI insights under a new key
         processed_speakers.append(combined_item)
-    
+
     # 🔹 Return the list of processed speaker items directly
     return jsonify(processed_speakers)
 
@@ -77,12 +77,12 @@ def get_teams():
     # Generate AI insights for the entire team summary object
     # ai_processor.generate_team_insights_realtime expects a single team_data object
     insights = ai_processor.generate_team_insights_realtime(data)
-    
+
     # 🔹 Add AI insights directly to the team data object
     # Make a copy to avoid modifying the original loaded data if it's used elsewhere
-    processed_team_data = data.copy() 
-    processed_team_data['ai_insights'] = insights 
-    
+    processed_team_data = data.copy()
+    processed_team_data['ai_insights'] = insights
+
     # 🔹 Return the processed team data object directly
     return jsonify(processed_team_data)
 
@@ -97,12 +97,12 @@ def get_judges():
     # Generate AI insights for the entire judge insights object
     # ai_processor.analyze_judge_comprehensive expects a single judge_data object
     insights = ai_processor.analyze_judge_comprehensive(data)
-    
+
     # 🔹 Add AI insights directly to the judge data object
     # Make a copy to avoid modifying the original loaded data if it's used elsewhere
     processed_judge_data = data.copy()
     processed_judge_data['ai_insights'] = insights
-    
+
     # 🔹 Return the processed judge data object directly
     return jsonify(processed_judge_data)
 
