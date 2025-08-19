@@ -117,7 +117,11 @@ def get_motions():
     # 🔹 Return the motion data directly (it's already an array)
     return jsonify(data)
 
-# 🔹 Start the app
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+# This block is for local development only and should be removed for production deployment.
+# Gunicorn handles starting the app for Render and other production environments.
+# if __name__ == "__main__":
+#     port = int(os.environ.get("PORT", 5000))
+#     app.run(debug=False, host='0.0.0.0', port=port)
+
+# No more if __name__ == '__main__': block needed.
+# Gunicorn will automatically find and run the `app` instance.
