@@ -4,18 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TabbyCat AI - Debate Tournament Management</title>
+    <!-- Bootstrap CSS from CDN for foundational styling -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Your custom stylesheet -->
     <link href="style.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+
+    <!-- Navigation Bar: Uses custom classes for styling -->
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#">
                 <i class="fas fa-trophy me-2"></i>TabbyCat AI
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -41,11 +45,11 @@
     </nav>
 
     <div class="container-fluid py-4">
-        <!-- Dashboard Section -->
+        <!-- Dashboard Section - This section is visible by default -->
         <div id="dashboard" class="content-section">
             <div class="row mb-4">
                 <div class="col-12">
-                    <h1 class="display-4 text-center mb-4">
+                    <h1 class="display-4 text-center mb-4 text-gradient">
                         <i class="fas fa-brain me-3 text-primary"></i>
                         TabbyCat AI Tournament Dashboard
                     </h1>
@@ -93,7 +97,7 @@
             </div>
         </div>
 
-        <!-- Speakers Section -->
+        <!-- Speakers Section - Initially hidden -->
         <div id="speakers" class="content-section" style="display: none;">
             <h2 class="mb-4"><i class="fas fa-microphone me-2"></i>Speaker Performance Analytics</h2>
             <div class="row mb-4">
@@ -109,7 +113,7 @@
             </div>
         </div>
 
-        <!-- Teams Section -->
+        <!-- Teams Section - Initially hidden -->
         <div id="teams" class="content-section" style="display: none;">
             <h2 class="mb-4"><i class="fas fa-users me-2"></i>Team Performance Summary</h2>
             <div id="teams-content">
@@ -117,7 +121,7 @@
             </div>
         </div>
 
-        <!-- Judges Section -->
+        <!-- Judges Section - Initially hidden -->
         <div id="judges" class="content-section" style="display: none;">
             <h2 class="mb-4"><i class="fas fa-gavel me-2"></i>Judge Analysis & Insights</h2>
             <div id="judges-content">
@@ -125,7 +129,7 @@
             </div>
         </div>
 
-        <!-- Motions Section -->
+        <!-- Motions Section - Initially hidden -->
         <div id="motions" class="content-section" style="display: none;">
             <h2 class="mb-4"><i class="fas fa-balance-scale me-2"></i>Motion Analysis & Predictions</h2>
             <div id="motions-content">
@@ -134,7 +138,7 @@
         </div>
     </div>
 
-    <!-- Loading Modal -->
+    <!-- Loading Modal - Initially hidden -->
     <div class="modal fade" id="loadingModal" tabindex="-1">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -148,6 +152,7 @@
         </div>
     </div>
 
+    <!-- Bootstrap and custom script JS files -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
