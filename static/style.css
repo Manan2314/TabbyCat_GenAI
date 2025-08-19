@@ -1,17 +1,32 @@
-/* TabbyCat AI - Original Style Recreation */
+/*
+ * TabbyCat AI - Updated Style Sheet
+ * Refactored for improved readability, consistency, and detailed commenting.
+ */
+
+/*
+ * ====================================
+ * Root Variables & Global Resets
+ * ====================================
+ * Defines a set of custom properties (CSS variables) for a consistent theme.
+ * The universal selector resets margin, padding, and box-sizing.
+ */
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --success-color: #27ae60;
-    --warning-color: #f39c12;
-    --dark-bg: #1a1a1a;
-    --card-bg: #2d3748;
-    --text-light: #e2e8f0;
-    --border-color: #4a5568;
+    --primary-color: #2c3e50;    /* Dark navy for primary elements */
+    --secondary-color: #3498db;  /* Bright blue for accents */
+    --accent-color: #e74c3c;     /* Red for alerts or important highlights */
+    --success-color: #27ae60;    /* Green for success states */
+    --warning-color: #f39c12;    /* Orange for warnings */
+    --dark-bg: #1a1a1a;          /* A very dark background color */
+    --card-bg: #2d3748;          /* A slightly lighter card background for dark mode */
+    --text-light: #e2e8f0;       /* Light text for dark backgrounds */
+    --border-color: #4a5568;     /* A subtle border color */
+    --body-bg-start: #667eea;    /* Gradient start for body background */
+    --body-bg-end: #764ba2;      /* Gradient end for body background */
 }
 
-* {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -19,12 +34,17 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--body-bg-start), var(--body-bg-end));
     min-height: 100vh;
     color: #333;
 }
 
-/* Navigation Styles */
+/*
+ * ====================================
+ * Navigation Bar Styles
+ * ====================================
+ * A sleek, semi-transparent navigation bar with hover effects.
+ */
 .navbar {
     background: rgba(44, 62, 80, 0.95) !important;
     backdrop-filter: blur(10px);
@@ -49,19 +69,24 @@ body {
     transform: translateY(-2px);
 }
 
-/* Card Styles */
+/*
+ * ====================================
+ * General Card Styles
+ * ====================================
+ * Reusable card styles with a modern feel, including shadow and hover effects.
+ */
 .card {
     border: none;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Slightly lighter shadow */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25); /* Slightly lighter hover shadow */
 }
 
 .card-header {
@@ -77,9 +102,14 @@ body {
     padding: 1.5rem;
 }
 
-/* Dashboard Stats Cards */
+/*
+ * ====================================
+ * Dashboard Statistics Card Gradients
+ * ====================================
+ * Specific background gradients for different statistical cards.
+ */
 .bg-primary {
-    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    background: linear-gradient(135deg, var(--body-bg-start), var(--body-bg-end)) !important;
 }
 
 .bg-success {
@@ -94,15 +124,20 @@ body {
     background: linear-gradient(135deg, #4facfe, #00f2fe) !important;
 }
 
-/* Content Sections */
+/*
+ * ====================================
+ * Content Sections & Animations
+ * ====================================
+ * Applies a fade-in-up animation to main content sections.
+ */
 .content-section {
-    animation: fadeInUp 0.6s ease;
+    animation: fadeInUp 0.6s ease-out;
 }
 
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px); /* Adjusted value */
     }
     to {
         opacity: 1;
@@ -110,7 +145,13 @@ body {
     }
 }
 
-/* Speaker Cards */
+/*
+ * ====================================
+ * Specific Component Styles
+ * ====================================
+ * Styles for individual components like speaker cards, AI insights, etc.
+ */
+
 .speaker-card {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 15px;
@@ -132,9 +173,8 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* AI Insights Box */
 .ai-insights {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, var(--body-bg-start), var(--body-bg-end));
     color: white;
     border-radius: 10px;
     padding: 1rem;
@@ -151,7 +191,6 @@ body {
     opacity: 0.9;
 }
 
-/* Team Performance */
 .team-section {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 15px;
@@ -175,7 +214,6 @@ body {
     transition: width 0.8s ease;
 }
 
-/* Judge Analysis */
 .judge-card {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 15px;
@@ -192,7 +230,6 @@ body {
     font-weight: 500;
 }
 
-/* Motion Cards */
 .motion-card {
     background: rgba(255, 255, 255, 0.95);
     border-left: 4px solid var(--secondary-color);
@@ -215,7 +252,6 @@ body {
     margin-bottom: 0.5rem;
 }
 
-/* Win Probability Styles */
 .progress {
     height: 20px;
     border-radius: 10px;
@@ -227,7 +263,6 @@ body {
     transition: width 0.8s ease;
 }
 
-/* Speaker Selection */
 .form-select {
     border-radius: 10px;
     border: 2px solid var(--border-color);
@@ -241,13 +276,17 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
 }
 
-/* Loading Animation */
 .spinner-border {
     width: 3rem;
     height: 3rem;
 }
 
-/* Responsive Design */
+/*
+ * ====================================
+ * Responsive Design
+ * ====================================
+ * Adjustments for smaller screen sizes.
+ */
 @media (max-width: 768px) {
     .navbar-brand {
         font-size: 1.5rem;
@@ -266,8 +305,18 @@ body {
     }
 }
 
-/* Dark Mode Enhancements */
+/*
+ * ====================================
+ * Dark Mode Enhancements
+ * ====================================
+ * Automatic theme switching based on user's system preferences.
+ */
 @media (prefers-color-scheme: dark) {
+    body {
+        background: var(--dark-bg);
+        color: var(--text-light);
+    }
+    
     .card {
         background: rgba(45, 55, 72, 0.95);
         color: var(--text-light);
@@ -277,9 +326,19 @@ body {
         background: rgba(45, 55, 72, 0.95);
         color: var(--text-light);
     }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--dark-bg), var(--card-bg)) !important;
+        color: var(--text-light);
+    }
 }
 
-/* Utility Classes */
+/*
+ * ====================================
+ * Utility Classes & Animations
+ * ====================================
+ * Helper classes and global animations.
+ */
 .text-gradient {
     background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
     -webkit-background-clip: text;
@@ -292,7 +351,6 @@ body {
     border-image: linear-gradient(135deg, var(--secondary-color), var(--accent-color)) 1;
 }
 
-/* Animation for page transitions */
 .fade-in {
     animation: fadeIn 0.5s ease-in;
 }
