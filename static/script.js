@@ -1,4 +1,4 @@
-// This script now fetches data from the JSON files.
+// This script now fetches data from the JSON files and includes a loading state.
 
 /**
  * Toggles the visibility of different content sections.
@@ -24,7 +24,7 @@ async function fetchData(filePath) {
     try {
         const response = await fetch(filePath);
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status} from ${filePath}`);
         }
         return await response.json();
     } catch (error) {
@@ -35,31 +35,57 @@ async function fetchData(filePath) {
 
 /**
  * Populates the dashboard with data from the JSON files.
- * This function is now dynamic and relies on data from the JSON files.
  */
 async function populateDashboard() {
-    // Fetch data for all sections
-    const speakerData = await fetchData('static/speaker_feedback.json');
-    const teamData = await fetchData('static/team_summary.json');
-    const judgeData = await fetchData('static/judge_insights.json');
-    const motionData = await fetchData('static/motion_data.json');
+    const loadingMessage = document.getElementById('loading-message');
+    loadingMessage.textContent = 'Loading dashboard data...';
+    
+    // An array of promises for each data fetch, now using absolute paths
+    const fetchPromises = [
+        fetchData('/static/speaker_feedback.json'),
+        fetchData('/static/team_summary.json'),
+        fetchData('/static/judge_insights.json'),
+        fetchData('/static/motion_data.json')
+    ];
 
-    // Update the dashboard with the counts from the fetched data
-    if (speakerData) {
-        document.getElementById('total-speakers').textContent = speakerData.speakers.length;
-        populateSpeakers(speakerData.speakers);
-    }
-    if (teamData) {
-        document.getElementById('total-teams').textContent = teamData.teams.length;
-        populateTeams(teamData.teams);
-    }
-    if (judgeData) {
-        document.getElementById('total-judges').textContent = judgeData.judges.length;
-        populateJudges(judgeData.judges);
-    }
-    if (motionData) {
-        document.getElementById('total-motions').textContent = motionData.motions.length;
-        populateMotions(motionData.motions);
+    try {
+        // Wait for all promises to resolve
+        const [speakerData, teamData, judgeData, motionData] = await Promise.all(fetchPromises);
+        
+        // Hide the loading message
+        loadingMessage.style.display = 'none';
+
+        // Check if data was fetched successfully before populating
+        if (speakerData && speakerData.speakers) {
+            document.getElementById('total-speakers').textContent = speakerData.speakers.length;
+            populateSpeakers(speakerData.speakers);
+        } else {
+            console.error("Speaker data not found or invalid.");
+        }
+
+        if (teamData && teamData.teams) {
+            document.getElementById('total-teams').textContent = teamData.teams.length;
+            populateTeams(teamData.teams);
+        } else {
+            console.error("Team data not found or invalid.");
+        }
+
+        if (judgeData && judgeData.judges) {
+            document.getElementById('total-judges').textContent = judgeData.judges.length;
+            populateJudges(judgeData.judges);
+        } else {
+            console.error("Judge data not found or invalid.");
+        }
+        
+        if (motionData && motionData.motions) {
+            document.getElementById('total-motions').textContent = motionData.motions.length;
+            populateMotions(motionData.motions);
+        } else {
+            console.error("Motion data not found or invalid.");
+        }
+    } catch (error) {
+        console.error("An error occurred during data fetching:", error);
+        loadingMessage.textContent = 'Failed to load data. Please check the console for more details.';
     }
 }
 
