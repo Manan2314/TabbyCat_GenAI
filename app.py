@@ -35,6 +35,9 @@ def get_data(filename):
 # -----------------------------
 # Main entry point
 # -----------------------------
+import os
+
 if __name__ == "__main__":
-    # Debug only for local dev; Render uses gunicorn
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Render sets PORT automatically
+    app.run(host="0.0.0.0", port=port)
+
