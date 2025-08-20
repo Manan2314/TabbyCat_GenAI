@@ -1,22 +1,31 @@
-# Import necessary modules from the Flask framework
-from flask import Flask, render_template, send_from_directory
+import os
+import json
+from flask import Flask, render_template, send_from_directory, jsonify
 
-# This is the standard way to initialize a Flask application.
-# The static_url_path parameter explicitly tells Flask to serve files from the
-# 'static' folder when a URL like '/static/style.css' is requested.
-app = Flask(__name__, static_url_path='/static')
+# Initialize Flask with explicit static and template folders
+app = Flask(__name__, static_folder="static", template_folder="templates")
 
-# Define a route for the root URL of your application ('/').
-# This route will render your main HTML file.
+# Root route → renders index.html
 @app.route('/')
 def index():
-    # The render_template function looks for 'index.html' inside a 'templates' folder.
-    # Make sure your 'index.html' file is located there.
     return render_template('index.html')
 
-# This is an optional but robust route to ensure static files are served correctly.
+# Explicit static route (optional, but keeps it safe)
 @app.route('/static/<path:filename>')
 def serve_static(filename):
-    # This function tells the server to find the requested 'filename'
-    # inside the 'static' directory and serve it back to the browser.
-    return send_from_directory('static', filename)
+    return send_from_directory(app.static_folder, filename)
+
+# Route to serve JSON data files from /data folder
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+
+@app.route('/data/<filename>')
+def get_data(filename):
+    filepath = os.path.join(DATA_DIR, filename)
+    if os.path.exists(filepath):
+        with open(filepath) as f:
+            return jsonify(json.load(f))
+    return jsonify({"error": "File not found"}), 404
+
+# Only for local debugging
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
