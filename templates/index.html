@@ -20,9 +20,6 @@
                         TabbyCat AI Tournament Dashboard
                     </h1>
                     <p class="lead text-center text-muted">AI-Powered Debate Tournament Management System</p>
-                    
-                    <!-- 🔥 Added loading message placeholder -->
-                    <p id="loading-message" class="text-center text-info fw-bold">Loading...</p>
                 </div>
             </div>
 
@@ -68,6 +65,11 @@
         </div>
     </div>
 
-   <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- ✅ Hidden loading message OUTSIDE UI -->
+    <div id="loading-message" class="text-center text-info fw-bold" style="display:none;">
+        Loading...
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
