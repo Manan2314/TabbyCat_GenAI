@@ -1,208 +1,466 @@
+# TabbyCat GenAI - Gemini AI Integration
+# Replace Sarvam AI with Google Gemini AI
+
+import google.generativeai as genai
 import os
 import json
-import requests
-import re # Import the regular expression module
+import pandas as pd
+from typing import Dict, List, Any, Optional
+import logging
 
-class AIIntegration:
-    def __init__(self):
-        # Retrieve API key from environment variables
-        self.sarvam_api_key = os.getenv("SARVAM_API_KEY")
-        if not self.sarvam_api_key:
-            raise ValueError("SARVAM_API_KEY environment variable not set.")
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-        self.sarvam_api_url = "https://sarvam-ai-api.azurewebsites.net/v1/chat/completions"
-        self.headers = {
-            "Authorization": f"Bearer {self.sarvam_api_key}",
-            "Content-Type": "application/json",
-        }
-
-    def _call_sarvam_ai(self, prompt_messages, max_tokens=150, temperature=0.7):
-        """Helper to call Sarvam AI with structured messages."""
-        data = {
-            "messages": prompt_messages,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        }
-        try:
-            response = requests.post(self.sarvam_api_url, headers=self.headers, json=data)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            return response.json()
-        except requests.exceptions.HTTPError as http_err:
-            print(f"HTTP error occurred: {http_err} - {response.text}")
-            return {"error": f"HTTP error: {http_err}", "details": response.text}
-        except requests.exceptions.ConnectionError as conn_err:
-            print(f"Connection error occurred: {conn_err}")
-            return {"error": f"Connection error: {conn_err}"}
-        except requests.exceptions.Timeout as timeout_err:
-            print(f"Timeout error occurred: {timeout_err}")
-            return {"error": f"Timeout error: {timeout_err}"}
-        except requests.exceptions.RequestException as req_err:
-            print(f"An error occurred: {req_err}")
-            return {"error": f"Request error: {req_err}"}
-        except json.JSONDecodeError as json_err:
-            print(f"JSON decode error: {json_err} - Response: {response.text}")
-            return {"error": f"JSON decode error: {json_err}", "details": response.text}
-
-    def _extract_content(self, response):
-        """Extracts content from AI response, handling errors."""
-        if isinstance(response, dict) and response.get("error"):
-            return f"AI Error: {response['error']}. Details: {response.get('details', 'N/A')}"
-        try:
-            return response.get("choices", [])[0].get("message", {}).get("content", "No content generated.")
-        except (IndexError, AttributeError):
-            return "Failed to extract content from AI response."
-
-    # 🔹 NEW HELPER FUNCTION TO PARSE AI'S CONCISE FEEDBACK 🔹
-    def _parse_ai_feedback_output(self, ai_response_string):
-        """Parses the AI's string output into a dictionary."""
-        general_feedback_match = re.search(r'general_feedback: "(.*?)"', ai_response_string, re.DOTALL)
-        improvement_advice_match = re.search(r'improvement_advice: "(.*?)"', ai_response_string, re.DOTALL)
-
-        return {
-            "general_feedback": general_feedback_match.group(1).strip() if general_feedback_match else "No general feedback generated.",
-            "improvement_advice": improvement_advice_match.group(1).strip() if improvement_advice_match else "No improvement advice generated."
-        }
-
-    def generate_speaker_feedback(self, speaker_data):
+class GeminiAIService:
+    """
+    Service class for Google Gemini AI integration
+    Replaces the previous Sarvam AI implementation
+    """
+    
+    def __init__(self, api_key: str = None):
         """
-        Generates concise, refined speaker feedback based on judge comments.
-        The AI refines existing feedback, not a raw judge_comment from outside.
+        Initialize Gemini AI service
+        
+        Args:
+            api_key (str): Google AI API key. If None, tries to get from environment
         """
-        name = speaker_data.get('name', 'N/A')
-        role = speaker_data.get('role', 'N/A')
-        score = speaker_data.get('score', 'N/A')
-
-        # Combine existing general feedback and improvement advice for the AI to refine
-        existing_general_feedback = speaker_data.get('feedback', {}).get('general_feedback', '')
-        existing_improvement_advice = speaker_data.get('feedback', {}).get('improvement_advice', '')
-
-        # Construct the judge_comment by combining existing feedback
-        # This is what the AI will 'rewrite'
-        combined_judge_comment = f"General: {existing_general_feedback}. Improvement: {existing_improvement_advice}."
-
-        # 🔹 YOUR NEW PROMPT IS HERE 🔹
-        prompt_text = f"""You are an AI assistant helping students improve at debating by refining judge feedback.
-You will be given a speaker's name, role, and the raw comment from the adjudicator.
-Your job is to rewrite the judge's verdict in a short, crisp, and logical way that:
-
-- Summarizes what went well
-- Gives clear improvement advice
-- Keeps the tone constructive and helpful
-
-Format your output like this:
-general_feedback: "..."
-improvement_advice: "..."
-
-Make sure both lines are concise (1-2 sentences max). Do not repeat points across sections. Keep the language simple and student-friendly.
-
-Input:
-{{
-"name": "{name}",
-"role": "{role}",
-"score": {score},
-"judge_comment": "{combined_judge_comment}"
-}}
-"""
-        messages = [{"role": "user", "content": prompt_text}]
-
-        response_json = self._call_sarvam_ai(messages, max_tokens=150, temperature=0.5) # Adjusted max_tokens and temp for conciseness
-        ai_raw_content = self._extract_content(response_json)
-
-        # 🔹 Parse the AI's specific output format 🔹
-        parsed_feedback = self._parse_ai_feedback_output(ai_raw_content)
-        return parsed_feedback
-
-    def generate_team_insights_realtime(self, team_data):
-        """Analyzes team performance data."""
-        team_name = team_data.get('team_name', 'N/A')
-        members = ", ".join(team_data.get('members', []))
-        rounds_summary = []
-        for r in team_data.get('rounds', []):
-            rounds_summary.append(f"Round {r.get('round')}: Average Score {r.get('average_score')}, Feedback: {r.get('team_feedback', 'N/A')}")
-
-        prompt_text = f"""Analyze the performance of team {team_name} with members {members}.
-        Summary of rounds: {'; '.join(rounds_summary)}.
-        Provide a concise overall assessment of their strengths, weaknesses, and a key area for improvement based on their trends. Keep it to 3-4 sentences."""
-
-        messages = [{"role": "user", "content": prompt_text}]
-        response_json = self._call_sarvam_ai(messages, max_tokens=150, temperature=0.6)
-        return self._extract_content(response_json)
-
-    def analyze_judge_comprehensive(self, judge_data):
-        """Analyzes a judge's patterns and provides insights."""
-        judge_name = judge_data.get('judge_name', 'N/A')
-        judge_style = judge_data.get('judge_style', 'N/A')
-        overall_insight = judge_data.get('overall_judging_insight', 'N/A')
-
-        rounds_scored_summary = []
-        for r in judge_data.get('rounds', []):
-            speakers_scores = ", ".join([f"{s.get('name')}: {s.get('score')}" for s in r.get('speakers_scored', [])])
-            rounds_scored_summary.append(f"Round {r.get('round')}: Speakers scored: {speakers_scores}.")
-
-        prompt_text = f"""Analyze the judging patterns of {judge_name}.
-        Judge Style: {judge_style}.
-        Overall Insight: {overall_insight}.
-        Rounds Scored Summary: {'; '.join(rounds_scored_summary)}.
-
-        Provide a concise, 2-3 sentence summary of their judging tendencies, including any biases or notable patterns. Focus on constructive observations for teams debating in front of this judge."""
-
-        messages = [{"role": "user", "content": prompt_text}]
-        response_json = self._call_sarvam_ai(messages, max_tokens=120, temperature=0.6)
-        return self._extract_content(response_json)
-
-# Example usage (for testing locally, remove when deploying)
-if __name__ == "__main__":
-    # Ensure SARVAM_API_KEY is set in your environment
-    # os.environ["SARVAM_API_KEY"] = "YOUR_SARVAM_API_KEY" # <--- Set your actual API Key for local testing
-
-    try:
-        ai = AIIntegration()
-
-        # Test Speaker Feedback
-        test_speaker_data = {
-            "name": "Arjun Verma",
-            "team": "GD A",
-            "role": "Closing Government - 1st Speaker",
-            "round": "Round 1",
-            "score": 78,
-            "feedback": {
-                "general_feedback": "Your arguments were novel and well-structured.",
-                "improvement_advice": "Try to back your claims with stronger data and clearer links to the motion."
+        self.api_key = api_key or os.getenv('GOOGLE_AI_API_KEY')
+        if not self.api_key:
+            raise ValueError("Google AI API key is required. Set GOOGLE_AI_API_KEY environment variable or pass api_key parameter.")
+        
+        # Configure Gemini AI
+        genai.configure(api_key=self.api_key)
+        
+        # Initialize the model (using Gemini Pro)
+        self.model = genai.GenerativeModel('gemini-pro')
+        
+        logger.info("Gemini AI service initialized successfully")
+    
+    def analyze_speaker_performance(self, speaker_data: Dict) -> Dict:
+        """
+        Analyze speaker performance using Gemini AI
+        
+        Args:
+            speaker_data (Dict): Speaker performance data including scores, speeches, etc.
+            
+        Returns:
+            Dict: Analysis results with insights and recommendations
+        """
+        try:
+            # Prepare the prompt for speaker analysis
+            prompt = f"""
+            Analyze the following speaker performance data for a debate tournament:
+            
+            Speaker Name: {speaker_data.get('name', 'Unknown')}
+            Average Score: {speaker_data.get('avg_score', 0)}
+            Speeches Given: {speaker_data.get('speech_count', 0)}
+            Scores: {speaker_data.get('scores', [])}
+            Speech Texts (sample): {speaker_data.get('speech_samples', [])}
+            
+            Please provide:
+            1. Performance Trends Analysis
+            2. Strengths and Weaknesses
+            3. Consistency Rating (1-10)
+            4. Percentile Ranking Analysis
+            5. Specific Improvement Recommendations
+            6. Speaking Style Assessment
+            
+            Format the response as a structured analysis with clear sections.
+            """
+            
+            response = self.model.generate_content(prompt)
+            
+            # Parse and structure the response
+            analysis = {
+                'speaker_name': speaker_data.get('name', 'Unknown'),
+                'ai_analysis': response.text,
+                'performance_score': speaker_data.get('avg_score', 0),
+                'trends': self._extract_trends(response.text),
+                'recommendations': self._extract_recommendations(response.text),
+                'timestamp': pd.Timestamp.now().isoformat()
             }
-        }
-        speaker_feedback = ai.generate_speaker_feedback(test_speaker_data)
-        print("\n--- Speaker Feedback ---")
-        print(f"General Feedback: {speaker_feedback['general_feedback']}")
-        print(f"Improvement Advice: {speaker_feedback['improvement_advice']}")
+            
+            return analysis
+            
+        except Exception as e:
+            logger.error(f"Error in speaker performance analysis: {str(e)}")
+            return {'error': str(e)}
+    
+    def generate_team_strategy(self, team_data: Dict, motion: str) -> Dict:
+        """
+        Generate team strategy using Gemini AI
+        
+        Args:
+            team_data (Dict): Team performance data
+            motion (str): Debate motion
+            
+        Returns:
+            Dict: Strategy recommendations and analysis
+        """
+        try:
+            prompt = f"""
+            Generate a comprehensive team strategy for the following debate scenario:
+            
+            Motion: {motion}
+            Team Information:
+            - Team Name: {team_data.get('name', 'Unknown')}
+            - Average Team Score: {team_data.get('avg_score', 0)}
+            - Previous Performance: {team_data.get('performance_history', [])}
+            - Speaker Strengths: {team_data.get('speaker_strengths', {})}
+            - Side: {team_data.get('side', 'Unknown')}
+            
+            Please provide:
+            1. Core Arguments Strategy
+            2. Speaker Role Assignments
+            3. Coordination Recommendations
+            4. Potential Counter-Arguments to Prepare For
+            5. Tactical Approach
+            6. Time Management Strategy
+            7. Specific Preparation Points
+            
+            Make the strategy actionable and specific to this motion and team composition.
+            """
+            
+            response = self.model.generate_content(prompt)
+            
+            strategy = {
+                'team_name': team_data.get('name', 'Unknown'),
+                'motion': motion,
+                'strategy_analysis': response.text,
+                'key_points': self._extract_key_points(response.text),
+                'coordination_insights': self._extract_coordination_insights(response.text),
+                'timestamp': pd.Timestamp.now().isoformat()
+            }
+            
+            return strategy
+            
+        except Exception as e:
+            logger.error(f"Error in team strategy generation: {str(e)}")
+            return {'error': str(e)}
+    
+    def analyze_judge_patterns(self, judge_data: Dict) -> Dict:
+        """
+        Analyze judge scoring patterns using Gemini AI
+        
+        Args:
+            judge_data (Dict): Judge scoring history and patterns
+            
+        Returns:
+            Dict: Judge pattern analysis and adaptation strategies
+        """
+        try:
+            prompt = f"""
+            Analyze the following judge's scoring patterns and preferences:
+            
+            Judge Name: {judge_data.get('name', 'Unknown')}
+            Rounds Judged: {judge_data.get('rounds_judged', 0)}
+            Average Scores Given: {judge_data.get('avg_scores', {})}
+            Scoring History: {judge_data.get('scoring_history', [])}
+            Motion Types Judged: {judge_data.get('motion_types', [])}
+            Feedback Patterns: {judge_data.get('feedback_patterns', [])}
+            
+            Please provide:
+            1. Scoring Pattern Analysis
+            2. Preferred Argument Types
+            3. Speaking Style Preferences
+            4. Consistency in Scoring
+            5. Adaptation Strategies for Teams
+            6. Key Factors This Judge Values
+            7. Common Feedback Themes
+            
+            Focus on actionable insights that teams can use to adapt their approach.
+            """
+            
+            response = self.model.generate_content(prompt)
+            
+            analysis = {
+                'judge_name': judge_data.get('name', 'Unknown'),
+                'pattern_analysis': response.text,
+                'adaptation_strategies': self._extract_adaptation_strategies(response.text),
+                'scoring_insights': self._extract_scoring_insights(response.text),
+                'timestamp': pd.Timestamp.now().isoformat()
+            }
+            
+            return analysis
+            
+        except Exception as e:
+            logger.error(f"Error in judge pattern analysis: {str(e)}")
+            return {'error': str(e)}
+    
+    def generate_motion_strategy(self, motion: str, side: str, context: Dict = None) -> Dict:
+        """
+        Generate motion-specific strategy using Gemini AI
+        
+        Args:
+            motion (str): The debate motion
+            side (str): Side of the debate (Gov/Prop or Opp)
+            context (Dict): Additional context about the tournament, format, etc.
+            
+        Returns:
+            Dict: Motion strategy and analysis
+        """
+        try:
+            context_info = context or {}
+            
+            prompt = f"""
+            Generate a comprehensive debate strategy for the following motion:
+            
+            Motion: {motion}
+            Side: {side}
+            Tournament Context: {context_info.get('tournament_type', 'Standard BP')}
+            Round Type: {context_info.get('round_type', 'Regular')}
+            Additional Context: {context_info.get('additional_info', 'None')}
+            
+            Please provide:
+            1. Motion Analysis and Key Issues
+            2. Core Arguments for {side} side
+            3. Potential Opposition Arguments
+            4. Evidence and Examples to Use
+            5. Framing Strategy
+            6. Rebuttal Preparation
+            7. Extension Opportunities (if applicable)
+            8. Common Pitfalls to Avoid
+            
+            Make the strategy specific to this motion and provide concrete argument lines.
+            """
+            
+            response = self.model.generate_content(prompt)
+            
+            strategy = {
+                'motion': motion,
+                'side': side,
+                'strategy_analysis': response.text,
+                'core_arguments': self._extract_core_arguments(response.text),
+                'counter_strategies': self._extract_counter_strategies(response.text),
+                'timestamp': pd.Timestamp.now().isoformat()
+            }
+            
+            return strategy
+            
+        except Exception as e:
+            logger.error(f"Error in motion strategy generation: {str(e)}")
+            return {'error': str(e)}
+    
+    def generate_feedback(self, performance_data: Dict, feedback_type: str = "general") -> Dict:
+        """
+        Generate AI-powered feedback for performance improvement
+        
+        Args:
+            performance_data (Dict): Performance data to analyze
+            feedback_type (str): Type of feedback (speaker, team, judge)
+            
+        Returns:
+            Dict: Generated feedback and recommendations
+        """
+        try:
+            if feedback_type == "speaker":
+                return self.analyze_speaker_performance(performance_data)
+            elif feedback_type == "team":
+                motion = performance_data.get('motion', 'General Strategy')
+                return self.generate_team_strategy(performance_data, motion)
+            elif feedback_type == "judge":
+                return self.analyze_judge_patterns(performance_data)
+            else:
+                # General feedback
+                prompt = f"""
+                Provide general debate performance feedback based on the following data:
+                {json.dumps(performance_data, indent=2)}
+                
+                Focus on actionable improvements and insights.
+                """
+                
+                response = self.model.generate_content(prompt)
+                
+                return {
+                    'feedback_type': feedback_type,
+                    'analysis': response.text,
+                    'timestamp': pd.Timestamp.now().isoformat()
+                }
+                
+        except Exception as e:
+            logger.error(f"Error in feedback generation: {str(e)}")
+            return {'error': str(e)}
+    
+    # Helper methods for extracting specific information from AI responses
+    
+    def _extract_trends(self, text: str) -> List[str]:
+        """Extract performance trends from AI response"""
+        # Simple extraction logic - can be enhanced with NLP
+        trends = []
+        lines = text.split('\n')
+        for line in lines:
+            if 'trend' in line.lower() or 'pattern' in line.lower():
+                trends.append(line.strip())
+        return trends
+    
+    def _extract_recommendations(self, text: str) -> List[str]:
+        """Extract recommendations from AI response"""
+        recommendations = []
+        lines = text.split('\n')
+        for line in lines:
+            if 'recommend' in line.lower() or 'suggest' in line.lower() or 'improve' in line.lower():
+                recommendations.append(line.strip())
+        return recommendations
+    
+    def _extract_key_points(self, text: str) -> List[str]:
+        """Extract key strategic points from AI response"""
+        key_points = []
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            if line.strip().startswith(('1.', '2.', '3.', '4.', '5.', '-', '•')):
+                key_points.append(line.strip())
+        return key_points
+    
+    def _extract_coordination_insights(self, text: str) -> List[str]:
+        """Extract coordination insights from AI response"""
+        insights = []
+        lines = text.split('\n')
+        for line in lines:
+            if 'coordinat' in line.lower() or 'teamwork' in line.lower() or 'collabor' in line.lower():
+                insights.append(line.strip())
+        return insights
+    
+    def _extract_adaptation_strategies(self, text: str) -> List[str]:
+        """Extract adaptation strategies from AI response"""
+        strategies = []
+        lines = text.split('\n')
+        for line in lines:
+            if 'adapt' in line.lower() or 'adjust' in line.lower() or 'strategy' in line.lower():
+                strategies.append(line.strip())
+        return strategies
+    
+    def _extract_scoring_insights(self, text: str) -> List[str]:
+        """Extract scoring insights from AI response"""
+        insights = []
+        lines = text.split('\n')
+        for line in lines:
+            if 'scor' in line.lower() or 'point' in line.lower() or 'mark' in line.lower():
+                insights.append(line.strip())
+        return insights
+    
+    def _extract_core_arguments(self, text: str) -> List[str]:
+        """Extract core arguments from AI response"""
+        arguments = []
+        lines = text.split('\n')
+        for line in lines:
+            if 'argument' in line.lower() or 'case' in line.lower() or 'claim' in line.lower():
+                arguments.append(line.strip())
+        return arguments
+    
+    def _extract_counter_strategies(self, text: str) -> List[str]:
+        """Extract counter strategies from AI response"""
+        strategies = []
+        lines = text.split('\n')
+        for line in lines:
+            if 'counter' in line.lower() or 'opposition' in line.lower() or 'rebutt' in line.lower():
+                strategies.append(line.strip())
+        return strategies
 
-        # Test Team Insights
-        test_team_data = {
-            "team_name": "GD A",
-            "members": ["Arjun Verma", "Aarav Mehta"],
-            "rounds": [\
-                {"round": "Round 1", "average_score": 79, "team_feedback": "Strong opening, good teamwork."},\
-                {"round": "Round 2", "average_score": 81, "team_feedback": "Improved rebuttals, struggled with POIs."},\
-            ]
-        }
-        team_insights = ai.generate_team_insights_realtime(test_team_data)
-        print("\n--- Team Insights ---")
-        print(team_insights)
 
-        # Test Judge Analysis
-        test_judge_data = {
-            "judge_name": "Arjun Mehta",
-            "judge_style": "Strict, focuses on logical consistency",
-            "overall_judging_insight": "Tends to reward clear argumentation over rhetoric.",
-            "rounds": [\
-                {"round": "Round 1", "speakers_scored": [{"name": "Speaker A", "score": 75}, {"name": "Speaker B", "score": 80}]},\
-                {"round": "Round 2", "speakers_scored": [{"name": "Speaker C", "score": 78}, {"name": "Speaker D", "score": 82}]},\
-            ]
+# Flask integration example
+class TabbyCatGeminiIntegration:
+    """
+    Main integration class for TabbyCat with Gemini AI
+    """
+    
+    def __init__(self, api_key: str = None):
+        self.ai_service = GeminiAIService(api_key)
+    
+    def get_speaker_analysis(self, speaker_id: int, tournament_data: Dict) -> Dict:
+        """Get AI-powered speaker analysis"""
+        # Extract speaker data from tournament data
+        speaker_data = self._prepare_speaker_data(speaker_id, tournament_data)
+        return self.ai_service.analyze_speaker_performance(speaker_data)
+    
+    def get_team_strategy(self, team_id: int, motion: str, tournament_data: Dict) -> Dict:
+        """Get AI-powered team strategy"""
+        team_data = self._prepare_team_data(team_id, tournament_data)
+        return self.ai_service.generate_team_strategy(team_data, motion)
+    
+    def get_judge_analysis(self, judge_id: int, tournament_data: Dict) -> Dict:
+        """Get AI-powered judge pattern analysis"""
+        judge_data = self._prepare_judge_data(judge_id, tournament_data)
+        return self.ai_service.analyze_judge_patterns(judge_data)
+    
+    def get_motion_strategy(self, motion: str, side: str, context: Dict = None) -> Dict:
+        """Get AI-powered motion strategy"""
+        return self.ai_service.generate_motion_strategy(motion, side, context)
+    
+    def _prepare_speaker_data(self, speaker_id: int, tournament_data: Dict) -> Dict:
+        """Prepare speaker data for AI analysis"""
+        # This would extract relevant speaker data from your tournament database
+        # Placeholder implementation
+        return {
+            'name': f'Speaker_{speaker_id}',
+            'avg_score': 75.5,
+            'speech_count': 6,
+            'scores': [74, 76, 75, 77, 73, 78],
+            'speech_samples': ['Sample speech text...']
         }
-        judge_insights = ai.analyze_judge_comprehensive(test_judge_data)
-        print("\n--- Judge Insights ---")
-        print(judge_insights)
+    
+    def _prepare_team_data(self, team_id: int, tournament_data: Dict) -> Dict:
+        """Prepare team data for AI analysis"""
+        # This would extract relevant team data from your tournament database
+        # Placeholder implementation
+        return {
+            'name': f'Team_{team_id}',
+            'avg_score': 150.5,
+            'performance_history': [148, 152, 149, 153],
+            'speaker_strengths': {'speaker1': 'Logic', 'speaker2': 'Delivery'}
+        }
+    
+    def _prepare_judge_data(self, judge_id: int, tournament_data: Dict) -> Dict:
+        """Prepare judge data for AI analysis"""
+        # This would extract relevant judge data from your tournament database
+        # Placeholder implementation
+        return {
+            'name': f'Judge_{judge_id}',
+            'rounds_judged': 12,
+            'avg_scores': {'gov': 75.2, 'opp': 74.8},
+            'scoring_history': [74, 76, 73, 77, 75],
+            'motion_types': ['Policy', 'Value', 'Fact'],
+            'feedback_patterns': ['Focus on logic', 'Values clear structure']
+        }
 
-    except ValueError as e:
-        print(f"Configuration Error: {e}")
+
+# Example usage and testing
+if __name__ == "__main__":
+    # Initialize with your Google AI API key
+    # Make sure to set GOOGLE_AI_API_KEY environment variable
+    
+    try:
+        # Initialize the integration
+        tabbycat_ai = TabbyCatGeminiIntegration()
+        
+        # Test speaker analysis
+        print("Testing Speaker Analysis...")
+        speaker_analysis = tabbycat_ai.get_speaker_analysis(1, {})
+        print("Speaker Analysis:", speaker_analysis)
+        
+        # Test team strategy
+        print("\nTesting Team Strategy...")
+        team_strategy = tabbycat_ai.get_team_strategy(
+            1, 
+            "This house believes that social media companies should be held liable for mental health issues caused by their platforms",
+            {}
+        )
+        print("Team Strategy:", team_strategy)
+        
+        # Test judge analysis
+        print("\nTesting Judge Analysis...")
+        judge_analysis = tabbycat_ai.get_judge_analysis(1, {})
+        print("Judge Analysis:", judge_analysis)
+        
+        # Test motion strategy
+        print("\nTesting Motion Strategy...")
+        motion_strategy = tabbycat_ai.get_motion_strategy(
+            "This house believes that artificial intelligence will ultimately benefit humanity",
+            "Government",
+            {"tournament_type": "BP", "round_type": "Final"}
+        )
+        print("Motion Strategy:", motion_strategy)
+        
     except Exception as e:
-        print(f"An unexpected error occurred during AI integration test: {e}")
+        print(f"Error: {e}")
+        print("Make sure to set your GOOGLE_AI_API_KEY environment variable")
