@@ -1,55 +1,42 @@
 import os
 import json
-import requests
 import re # Import the regular expression module
+import google.generativeai as genai
 
 class AIIntegration:
     def __init__(self):
         # Retrieve API key from environment variables
-        self.sarvam_api_key = os.getenv("SARVAM_API_KEY")
-        if not self.sarvam_api_key:
-            raise ValueError("SARVAM_API_KEY environment variable not set.")
+        self.gemini_api_key = os.getenv("GOOGLE_API_KEY")
+        if not self.gemini_api_key:
+            raise ValueError("GOOGLE_API_KEY environment variable not set.")
+        
+        # Configure the Gemini API client
+        genai.configure(api_key=self.gemini_api_key)
+        self.client = genai.GenerativeModel('gemini-pro')
 
-        self.sarvam_api_url = "https://sarvam-ai-api.azurewebsites.net/v1/chat/completions"
-        self.headers = {
-            "Authorization": f"Bearer {self.sarvam_api_key}",
-            "Content-Type": "application/json",
-        }
-
-    def _call_sarvam_ai(self, prompt_messages, max_tokens=150, temperature=0.7):
-        """Helper to call Sarvam AI with structured messages."""
-        data = {
-            "messages": prompt_messages,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        }
+    def _call_gemini_ai(self, prompt_text, max_tokens=150, temperature=0.7):
+        """Helper to call Gemini AI with a prompt string."""
         try:
-            response = requests.post(self.sarvam_api_url, headers=self.headers, json=data)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            return response.json()
-        except requests.exceptions.HTTPError as http_err:
-            print(f"HTTP error occurred: {http_err} - {response.text}")
-            return {"error": f"HTTP error: {http_err}", "details": response.text}
-        except requests.exceptions.ConnectionError as conn_err:
-            print(f"Connection error occurred: {conn_err}")
-            return {"error": f"Connection error: {conn_err}"}
-        except requests.exceptions.Timeout as timeout_err:
-            print(f"Timeout error occurred: {timeout_err}")
-            return {"error": f"Timeout error: {timeout_err}"}
-        except requests.exceptions.RequestException as req_err:
-            print(f"An error occurred: {req_err}")
-            return {"error": f"Request error: {req_err}"}
-        except json.JSONDecodeError as json_err:
-            print(f"JSON decode error: {json_err} - Response: {response.text}")
-            return {"error": f"JSON decode error: {json_err}", "details": response.text}
+            # The Gemini API takes a prompt string directly
+            response = self.client.generate_content(
+                prompt_text,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=temperature,
+                    max_output_tokens=max_tokens,
+                )
+            )
+            return response
+        except Exception as e:
+            print(f"An error occurred with the Gemini API: {e}")
+            return {"error": str(e)}
 
     def _extract_content(self, response):
-        """Extracts content from AI response, handling errors."""
+        """Extracts content from Gemini response, handling errors."""
         if isinstance(response, dict) and response.get("error"):
-            return f"AI Error: {response['error']}. Details: {response.get('details', 'N/A')}"
+            return f"AI Error: {response['error']}"
         try:
-            return response.get("choices", [])[0].get("message", {}).get("content", "No content generated.")
-        except (IndexError, AttributeError):
+            return response.text
+        except (AttributeError, ValueError):
             return "Failed to extract content from AI response."
 
     # 🔹 NEW HELPER FUNCTION TO PARSE AI'S CONCISE FEEDBACK 🔹
@@ -103,10 +90,8 @@ Input:
 "judge_comment": "{combined_judge_comment}"
 }}
 """
-        messages = [{"role": "user", "content": prompt_text}]
-
-        response_json = self._call_sarvam_ai(messages, max_tokens=150, temperature=0.5) # Adjusted max_tokens and temp for conciseness
-        ai_raw_content = self._extract_content(response_json)
+        response_obj = self._call_gemini_ai(prompt_text, max_tokens=150, temperature=0.5)
+        ai_raw_content = self._extract_content(response_obj)
 
         # 🔹 Parse the AI's specific output format 🔹
         parsed_feedback = self._parse_ai_feedback_output(ai_raw_content)
@@ -124,9 +109,8 @@ Input:
         Summary of rounds: {'; '.join(rounds_summary)}.
         Provide a concise overall assessment of their strengths, weaknesses, and a key area for improvement based on their trends. Keep it to 3-4 sentences."""
 
-        messages = [{"role": "user", "content": prompt_text}]
-        response_json = self._call_sarvam_ai(messages, max_tokens=150, temperature=0.6)
-        return self._extract_content(response_json)
+        response_obj = self._call_gemini_ai(prompt_text, max_tokens=150, temperature=0.6)
+        return self._extract_content(response_obj)
 
     def analyze_judge_comprehensive(self, judge_data):
         """Analyzes a judge's patterns and provides insights."""
@@ -146,14 +130,13 @@ Input:
 
         Provide a concise, 2-3 sentence summary of their judging tendencies, including any biases or notable patterns. Focus on constructive observations for teams debating in front of this judge."""
 
-        messages = [{"role": "user", "content": prompt_text}]
-        response_json = self._call_sarvam_ai(messages, max_tokens=120, temperature=0.6)
-        return self._extract_content(response_json)
+        response_obj = self._call_gemini_ai(prompt_text, max_tokens=120, temperature=0.6)
+        return self._extract_content(response_obj)
 
 # Example usage (for testing locally, remove when deploying)
 if __name__ == "__main__":
-    # Ensure SARVAM_API_KEY is set in your environment
-    # os.environ["SARVAM_API_KEY"] = "YOUR_SARVAM_API_KEY" # <--- Set your actual API Key for local testing
+    # Ensure GOOGLE_API_KEY is set in your environment
+    # os.environ["GOOGLE_API_KEY"] = "YOUR_GEMINI_API_KEY" # <--- Set your actual API Key for local testing
 
     try:
         ai = AIIntegration()
@@ -179,9 +162,9 @@ if __name__ == "__main__":
         test_team_data = {
             "team_name": "GD A",
             "members": ["Arjun Verma", "Aarav Mehta"],
-            "rounds": [\
-                {"round": "Round 1", "average_score": 79, "team_feedback": "Strong opening, good teamwork."},\
-                {"round": "Round 2", "average_score": 81, "team_feedback": "Improved rebuttals, struggled with POIs."},\
+            "rounds": [
+                {"round": "Round 1", "average_score": 79, "team_feedback": "Strong opening, good teamwork."},
+                {"round": "Round 2", "average_score": 81, "team_feedback": "Improved rebuttals, struggled with POIs."},
             ]
         }
         team_insights = ai.generate_team_insights_realtime(test_team_data)
@@ -193,9 +176,9 @@ if __name__ == "__main__":
             "judge_name": "Arjun Mehta",
             "judge_style": "Strict, focuses on logical consistency",
             "overall_judging_insight": "Tends to reward clear argumentation over rhetoric.",
-            "rounds": [\
-                {"round": "Round 1", "speakers_scored": [{"name": "Speaker A", "score": 75}, {"name": "Speaker B", "score": 80}]},\
-                {"round": "Round 2", "speakers_scored": [{"name": "Speaker C", "score": 78}, {"name": "Speaker D", "score": 82}]},\
+            "rounds": [
+                {"round": "Round 1", "speakers_scored": [{"name": "Speaker A", "score": 75}, {"name": "Speaker B", "score": 80}]},
+                {"round": "Round 2", "speakers_scored": [{"name": "Speaker C", "score": 78}, {"name": "Speaker D", "score": 82}]},
             ]
         }
         judge_insights = ai.analyze_judge_comprehensive(test_judge_data)
@@ -206,4 +189,3 @@ if __name__ == "__main__":
         print(f"Configuration Error: {e}")
     except Exception as e:
         print(f"An unexpected error occurred during AI integration test: {e}")
-
