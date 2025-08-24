@@ -27,7 +27,6 @@ ai_processor = AIIntegration()
 # ---------------- Utility ----------------
 def load_json(filename):
     file_path = os.path.join(DATA_DIR, filename)
-
     try:
         with open(file_path, "r") as file:
             return json.load(file)
@@ -72,7 +71,9 @@ def get_teams():
         return jsonify({"error": "Team summary data not found"}), 500
 
     processed = []
-    for team_item in (data if isinstance(data, list) else [data]):
+    data_to_process = data if isinstance(data, list) else [data]
+
+    for team_item in data_to_process:
         insights = ai_processor.generate_team_insights_realtime(team_item)
         combined = team_item.copy()
         combined["ai_insights"] = insights
