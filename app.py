@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, send_from_directory
 from flask_cors import CORS
 import json
 
@@ -15,8 +15,8 @@ if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
 app = Flask(
-    __name__, 
-    static_folder=os.path.join(BASE_DIR, "static"), 
+    __name__,
+    static_folder=os.path.join(BASE_DIR, "static"),
     template_folder=os.path.join(BASE_DIR, "templates")
 )
 CORS(app)  # Allow CORS for frontend
@@ -42,6 +42,11 @@ def load_json(filename):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+# ✅ Serve raw files from /data folder
+@app.route("/data/<path:filename>")
+def serve_data(filename):
+    return send_from_directory(DATA_DIR, filename)
 
 @app.route("/speakers", methods=["GET"])
 def get_speakers():
