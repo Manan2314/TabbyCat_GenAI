@@ -1,4 +1,4 @@
-// This script now fetches data from the JSON files and includes a loading state.
+// This script now fetches data from the Flask API routes instead of static JSON files.
 
 /**
  * Toggles the visibility of different content sections.
@@ -16,46 +16,43 @@ function showSection(sectionId) {
 }
 
 /**
- * Fetches data from a JSON file and returns it.
- * @param {string} filePath The path to the JSON file.
+ * Fetches data from a Flask API endpoint and returns it.
+ * @param {string} endpoint The API endpoint (e.g., "/speakers").
  * @returns {Promise<Object>} The parsed JSON data.
  */
-async function fetchData(filePath) {
+async function fetchData(endpoint) {
     try {
-        const response = await fetch(filePath);
+        const response = await fetch(endpoint);
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status} from ${filePath}`);
+            throw new Error(`HTTP error! status: ${response.status} from ${endpoint}`);
         }
         return await response.json();
     } catch (error) {
-        console.error(`Could not fetch data from ${filePath}:`, error);
+        console.error(`Could not fetch data from ${endpoint}:`, error);
         return null; // Return null on error
     }
 }
 
 /**
- * Populates the dashboard with data from the JSON files.
+ * Populates the dashboard with data from the Flask API endpoints.
  */
 async function populateDashboard() {
     const loadingMessage = document.getElementById('loading-message');
     loadingMessage.textContent = 'Loading dashboard data...';
     
-    // An array of promises for each data fetch, now using absolute paths
+    // Fetch from Flask endpoints (no more /static/)
     const fetchPromises = [
-        fetchData('/static/speaker_feedback.json'),
-        fetchData('/static/team_summary.json'),
-        fetchData('/static/judge_insights.json'),
-        fetchData('/static/motion_data.json')
+        fetchData('/speakers'),
+        fetchData('/teams'),
+        fetchData('/judges'),
+        fetchData('/motions')
     ];
 
     try {
-        // Wait for all promises to resolve
         const [speakerData, teamData, judgeData, motionData] = await Promise.all(fetchPromises);
         
-        // Hide the loading message
         loadingMessage.style.display = 'none';
 
-        // Check if data was fetched successfully before populating
         if (speakerData && speakerData.speakers) {
             document.getElementById('total-speakers').textContent = speakerData.speakers.length;
             populateSpeakers(speakerData.speakers);
@@ -91,7 +88,6 @@ async function populateDashboard() {
 
 /**
  * Populates the 'Speakers' section with data.
- * @param {Array<Object>} speakers The array of speaker data.
  */
 function populateSpeakers(speakers) {
     const speakerSelect = document.getElementById('speaker-select');
@@ -130,7 +126,6 @@ function populateSpeakers(speakers) {
 
 /**
  * Populates the 'Teams' section with data.
- * @param {Array<Object>} teams The array of team data.
  */
 function populateTeams(teams) {
     const teamsContent = document.getElementById('teams-content');
@@ -153,7 +148,6 @@ function populateTeams(teams) {
 
 /**
  * Populates the 'Judges' section with data.
- * @param {Array<Object>} judges The array of judge data.
  */
 function populateJudges(judges) {
     const judgesContent = document.getElementById('judges-content');
@@ -172,7 +166,6 @@ function populateJudges(judges) {
 
 /**
  * Populates the 'Motions' section with data.
- * @param {Array<Object>} motions The array of motion data.
  */
 function populateMotions(motions) {
     const motionsContent = document.getElementById('motions-content');
@@ -197,6 +190,5 @@ function populateMotions(motions) {
 // Initial setup when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     showSection('dashboard');
-    // Call the main function to fetch all data and populate the dashboard
     populateDashboard();
 });
