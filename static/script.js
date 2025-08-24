@@ -40,7 +40,7 @@ async function populateDashboard() {
     const loadingMessage = document.getElementById('loading-message');
     loadingMessage.textContent = 'Loading dashboard data...';
     
-    // Fetch from Flask endpoints (no more /static/)
+    // Fetch from Flask endpoints
     const fetchPromises = [
         fetchData('/speakers'),
         fetchData('/teams'),
@@ -53,30 +53,34 @@ async function populateDashboard() {
         
         loadingMessage.style.display = 'none';
 
-        if (speakerData && speakerData.speakers) {
-            document.getElementById('total-speakers').textContent = speakerData.speakers.length;
-            populateSpeakers(speakerData.speakers);
+        // ✅ Speakers (Flask returns a list)
+        if (speakerData && Array.isArray(speakerData)) {
+            document.getElementById('total-speakers').textContent = speakerData.length;
+            populateSpeakers(speakerData);
         } else {
             console.error("Speaker data not found or invalid.");
         }
 
-        if (teamData && teamData.teams) {
-            document.getElementById('total-teams').textContent = teamData.teams.length;
-            populateTeams(teamData.teams);
+        // ✅ Teams (Flask returns a dict, not wrapped in {teams: [...]})
+        if (teamData) {
+            document.getElementById('total-teams').textContent = 1;
+            populateTeams([teamData]);
         } else {
             console.error("Team data not found or invalid.");
         }
 
-        if (judgeData && judgeData.judges) {
-            document.getElementById('total-judges').textContent = judgeData.judges.length;
-            populateJudges(judgeData.judges);
+        // ✅ Judges (Flask returns a dict, not wrapped in {judges: [...]})
+        if (judgeData) {
+            document.getElementById('total-judges').textContent = 1;
+            populateJudges([judgeData]);
         } else {
             console.error("Judge data not found or invalid.");
         }
         
-        if (motionData && motionData.motions) {
-            document.getElementById('total-motions').textContent = motionData.motions.length;
-            populateMotions(motionData.motions);
+        // ✅ Motions (Flask returns a list)
+        if (motionData && Array.isArray(motionData)) {
+            document.getElementById('total-motions').textContent = motionData.length;
+            populateMotions(motionData);
         } else {
             console.error("Motion data not found or invalid.");
         }
@@ -116,6 +120,7 @@ function populateSpeakers(speakers) {
                         </div>
                     </div>
                     <p class="card-text">${selectedSpeaker.feedback}</p>
+                    <p class="text-info"><strong>AI Insight:</strong> ${selectedSpeaker.ai_insights}</p>
                 </div>
             `;
         } else {
@@ -137,8 +142,9 @@ function populateTeams(teams) {
                     <h5>${team.name}</h5>
                     <span class="fw-bold">${team.score} points</span>
                 </div>
+                <p class="text-info"><strong>AI Insight:</strong> ${team.ai_insights}</p>
                 <div class="progress" style="height: 15px;">
-                    <div class="progress-bar" role="progressbar" style="width: ${team.score}%; background-color: ${team.color};"></div>
+                    <div class="progress-bar" role="progressbar" style="width: ${team.score}%; background-color: ${team.color || '#007bff'};"></div>
                 </div>
             </div>
         `;
@@ -155,9 +161,9 @@ function populateJudges(judges) {
     judges.forEach(judge => {
         const judgeHtml = `
             <div class="judge-card p-4 mb-3 fade-in">
-                <h5>${judge.name} <span class="badge rounded-pill bg-info">${judge.style}</span></h5>
-                <p><strong>Bias Prediction:</strong> ${judge.bias}</p>
-                <p><strong>AI Insight:</strong> ${judge.insights}</p>
+                <h5>${judge.name || "Judge"} <span class="badge rounded-pill bg-info">${judge.style || "N/A"}</span></h5>
+                <p><strong>Bias Prediction:</strong> ${judge.bias || "Unknown"}</p>
+                <p><strong>AI Insight:</strong> ${judge.ai_insights || "No insights"}</p>
             </div>
         `;
         judgesContent.innerHTML += judgeHtml;
