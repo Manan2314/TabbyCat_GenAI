@@ -71,7 +71,7 @@ def get_teams():
     if data is None:
         return jsonify({"error": "Team summary data not found"}), 500
 
-     processed = []
+    processed = []
     for team_item in (data if isinstance(data, list) else [data]):
         insights = ai_processor.generate_team_insights_realtime(team_item)
         combined = team_item.copy()
@@ -79,8 +79,6 @@ def get_teams():
         processed.append(combined)
 
     return jsonify(processed)
-
-    
 
 @app.route("/judges", methods=["GET"])
 def get_judges():
