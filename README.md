@@ -25,7 +25,7 @@ This is a prototype built for the Indian Debating League Hackathon (Track C: Tab
 - **Chart.js**: Interactive charts and visualizations
 
 ### AI/ML
-- **Sarvam AI**: Primary AI integration for debate analysis
+- **GEMINI API**: Primary AI integration for debate analysis
 - **OpenAI GPT**: Secondary AI provider ( not deployed yet)
 - **Custom Analytics**: Statistical analysis and pattern recognition
 
