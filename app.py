@@ -42,8 +42,8 @@ def load_json(filename):
 def index():
     return render_template("index.html")
 
-# ✅ Serve raw files from /data folder
-@app.route("/data/<path:filename>")
+# ✅ Corrected route to match the frontend request from /static/data
+@app.route("/static/data/<path:filename>")
 def serve_data(filename):
     return send_from_directory(DATA_DIR, filename)
 
