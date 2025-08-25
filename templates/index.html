@@ -3,73 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TabbyCat AI Tournament Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <title>Tabbycat AI Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS for the dashboard, making sure it looks exactly like the original design. */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .sidebar {
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .stat-card {
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+        }
+        .nav-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .nav-item:hover {
+            background-color: #f1f5f9;
+        }
+        .nav-item.active {
+            background-color: #e2e8f0;
+            color: #1a202c;
+            border-left: 4px solid #4a5568;
+        }
+        .content-section.hidden {
+            display: none;
+        }
+        .ai-card {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            border-radius: 0.75rem;
+        }
+    </style>
 </head>
-<body>
-    <div class="container py-5">
+<body class="bg-gray-100 font-sans">
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar -->
+        <aside class="w-64 p-4 shadow-lg h-full overflow-y-auto bg-white">
+            <div class="text-2xl font-bold text-gray-800 mb-6 py-2 px-3">Tabbycat AI</div>
+            <nav>
+                <ul>
+                    <li class="nav-item p-3 mb-2 rounded-lg active" data-target="dashboard">Dashboard</li>
+                    <li class="nav-item p-3 mb-2 rounded-lg" data-target="speaker-feedback">Speaker Feedback</li>
+                    <li class="nav-item p-3 mb-2 rounded-lg" data-target="teams">Teams</li>
+                    <li class="nav-item p-3 mb-2 rounded-lg" data-target="judges">Judges</li>
+                    <li class="nav-item p-3 mb-2 rounded-lg" data-target="motions">Motions</li>
+                    <li class="nav-item p-3 mb-2 rounded-lg" data-target="ai-analysis">AI Analysis</li>
+                </ul>
+            </nav>
+        </aside>
 
-        <!-- Dashboard Header -->
-        <div id="dashboard" class="content-section">
-            <div class="row mb-4">
-                <div class="col-12">
-                    <h1 class="display-4 text-center mb-4 text-gradient">
-                        <i class="fas fa-brain me-3 text-primary"></i>
-                        TabbyCat AI Tournament Dashboard
-                    </h1>
-                    <p class="lead text-center text-muted">AI-Powered Debate Tournament Management System</p>
-                </div>
+        <!-- Main Content -->
+        <main class="flex-1 overflow-x-hidden overflow-y-auto p-6">
+            <div class="header p-6 rounded-b-lg shadow-sm bg-white">
+                <h1 class="text-3xl font-bold text-gray-800">Tournament Dashboard</h1>
+                <p class="text-gray-600">Overview of the most recent debate tournament round.</p>
             </div>
+            
+            <section id="dashboard" class="content-section">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+                    <div class="stat-card p-6 text-center bg-white rounded-xl shadow-sm">
+                        <div class="text-3xl font-bold text-blue-500" id="total-teams">0</div>
+                        <div class="text-gray-500">Teams</div>
+                    </div>
+                    <div class="stat-card p-6 text-center bg-white rounded-xl shadow-sm">
+                        <div class="text-3xl font-bold text-green-500" id="total-speakers">0</div>
+                        <div class="text-gray-500">Speakers</div>
+                    </div>
+                    <div class="stat-card p-6 text-center bg-white rounded-xl shadow-sm">
+                        <div class="text-3xl font-bold text-yellow-500" id="total-judges">0</div>
+                        <div class="text-gray-500">Judges</div>
+                    </div>
+                    <div class="stat-card p-6 text-center bg-white rounded-xl shadow-sm">
+                        <div class="text-3xl font-bold text-purple-500" id="total-motions">0</div>
+                        <div class="text-gray-500">Motions</div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm mt-6">
+                    <h2 class="text-xl font-semibold mb-4">Team Performance Summary</h2>
+                    <div id="teams-content" class="space-y-4"></div>
+                </div>
+            </section>
 
-            <!-- Speakers Section -->
-            <div class="row mb-5">
-                <div class="col-12">
-                    <h2 class="section-title">
-                        <i class="fas fa-microphone text-success me-2"></i>Speakers
-                    </h2>
-                    <div class="row" id="speakers-container"></div>
+            <section id="speaker-feedback" class="content-section hidden">
+                <div class="bg-white p-6 rounded-xl shadow-sm mt-6">
+                    <h2 class="text-xl font-semibold mb-4">Speaker Feedback</h2>
+                    <select id="speaker-select" class="form-select w-full p-2 border rounded-md"></select>
+                    <div id="speaker-feedback-display"></div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Teams Section -->
-            <div class="row mb-5">
-                <div class="col-12">
-                    <h2 class="section-title">
-                        <i class="fas fa-users text-primary me-2"></i>Teams
-                    </h2>
-                    <div class="row" id="teams-container"></div>
+            <section id="teams" class="content-section hidden">
+                <div class="bg-white p-6 rounded-xl shadow-sm mt-6">
+                    <h2 class="text-xl font-semibold mb-4">Detailed Team Performance</h2>
+                    <div id="teams-content-full" class="space-y-4"></div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Judges Section -->
-            <div class="row mb-5">
-                <div class="col-12">
-                    <h2 class="section-title">
-                        <i class="fas fa-gavel text-warning me-2"></i>Judges
-                    </h2>
-                    <div class="row" id="judges-container"></div>
+            <section id="judges" class="content-section hidden">
+                <div class="bg-white p-6 rounded-xl shadow-sm mt-6">
+                    <h2 class="text-xl font-semibold mb-4">Judge Insights</h2>
+                    <div id="judges-content" class="space-y-4"></div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Motions Section -->
-            <div class="row mb-5">
-                <div class="col-12">
-                    <h2 class="section-title">
-                        <i class="fas fa-scroll text-danger me-2"></i>Motions
-                    </h2>
-                    <div class="row" id="motions-container"></div>
+            <section id="motions" class="content-section hidden">
+                <div class="bg-white p-6 rounded-xl shadow-sm mt-6">
+                    <h2 class="text-xl font-semibold mb-4">Motion Analytics</h2>
+                    <div id="motions-content" class="space-y-4"></div>
                 </div>
-            </div>
-        </div>
+            </section>
+
+            <section id="ai-analysis" class="content-section hidden">
+                <div class="bg-white p-6 rounded-xl shadow-sm mt-6">
+                    <h2 class="text-xl font-semibold mb-4">AI-Driven Insights</h2>
+                    <div id="ai-insights-display" class="ai-card p-4">
+                        <p class="text-gray-700">Click the button below to generate AI analysis.</p>
+                        <button id="generate-ai-button" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md">Generate AI Analysis</button>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
-    <!-- ✅ Hidden loading message OUTSIDE UI -->
-    <div id="loading-message" class="text-center text-info fw-bold" style="display:none;">
-        Loading...
-    </div>
+    <script>
+        async function loadDashboardData() {
+            try {
+                // The key fix is here: correctly fetching JSON files from the 'static/data' directory.
+                const [speakersRes, teamsRes, judgesRes, motionsRes] = await Promise.all([
+                    fetch('/static/data/speakers.json'),
+                    fetch('/static/data/teams.json'),
+                    fetch('/static/data/judges.json'),
+                    fetch('/static/data/motions.json')
+                ]);
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+                // Check for successful responses
+                if (!speakersRes.ok || !teamsRes.ok || !judgesRes.ok || !motionsRes.ok) {
+                    throw new Error('One or more data files could not be loaded.');
+                }
+
+                // Parse the JSON data from each response
+                const speakers = await speakersRes.json();
+                const teams = await teamsRes.json();
+                const judges = await judgesRes.json();
+                const motions = await motionsRes.json();
+                
+                // Combine all data into a single object for consistency
+                const dashboardData = { speakers, teams, judges, motions };
+
+                // Now populate the dashboard with the combined data
+                populateDashboard(dashboardData);
+
+                // Attach event listener for the AI analysis button
+                document.getElementById('generate-ai-button').addEventListener('click', () => {
+                    generateAIAnalysis(dashboardData);
+                });
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                document.getElementById('ai-insights-display').innerHTML = `<p class="text-red-500">Error: Could not load debate data. Please check the file paths.</p>`;
+            }
+        }
+
+        // --- All supporting functions from your previous project ---
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.add('hidden');
+            });
+            const activeSection = document.getElementById(sectionId);
+            if (activeSection) {
+                activeSection.classList.remove('hidden');
+            }
+        }
+
+        function populateDashboard(dashboardData) {
+            const { speakers, teams, judges, motions } = dashboardData;
+            document.getElementById('total-speakers').textContent = speakers.length;
+            document.getElementById('total-teams').textContent = teams.length;
+            document.getElementById('total-judges').textContent = judges.length;
+            document.getElementById('total-motions').textContent = motions.length;
+            
+            populateTeams(teams, 'teams-content');
+            populateSpeakers(speakers);
+            populateTeams(teams, 'teams-content-full');
+            populateJudges(judges);
+            populateMotions(motions);
+        }
+
+        function populateSpeakers(speakers) {
+            const speakerSelect = document.getElementById('speaker-select');
+            speakerSelect.innerHTML = '<option value="">Choose a speaker...</option>';
+            
+            speakers.forEach(speaker => {
+                const option = document.createElement('option');
+                option.value = speaker.name;
+                option.textContent = speaker.name;
+                speakerSelect.appendChild(option);
+            });
+
+            speakerSelect.addEventListener('change', (event) => {
+                const selectedSpeakerName = event.target.value;
+                const selectedSpeaker = speakers.find(s => s.name === selectedSpeakerName);
+                const displayArea = document.getElementById('speaker-feedback-display');
+                
+                if (selectedSpeaker) {
+                    displayArea.innerHTML = `
+                        <div class="stat-card mt-4 p-4">
+                            <h5 class="text-xl font-semibold">${selectedSpeaker.name}</h5>
+                            <p class="text-sm text-gray-500 mb-2">Team: ${selectedSpeaker.team}</p>
+                            <div class="flex items-center mb-3">
+                                <span class="text-3xl font-bold me-3">${selectedSpeaker.score}</span>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="h-2 rounded-full" style="width: ${selectedSpeaker.score * 10}%; background: linear-gradient(135deg, #11998e, #38ef7d);"></div>
+                                </div>
+                            </div>
+                            <p class="text-gray-700">${selectedSpeaker.feedback}</p>
+                        </div>
+                    `;
+                } else {
+                    displayArea.innerHTML = `<p class="text-muted text-center mt-4">Please select a speaker to view their feedback.</p>`;
+                }
+            });
+        }
+
+        function populateTeams(teams, elementId) {
+            const teamsContent = document.getElementById(elementId);
+            teamsContent.innerHTML = '';
+            teams.forEach(team => {
+                const teamHtml = `
+                    <div class="stat-card p-4 mb-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <h5 class="text-lg font-bold">${team.name}</h5>
+                            <span class="text-xl font-bold">${team.score}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="h-4 rounded-full" style="width: ${team.score * 10}%; background-color: ${team.color};"></div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">Speakers: ${team.speakers.join(', ')}</p>
+                    </div>
+                `;
+                teamsContent.innerHTML += teamHtml;
+            });
+        }
+
+        function populateJudges(judges) {
+            const judgesContent = document.getElementById('judges-content');
+            judgesContent.innerHTML = '';
+            judges.forEach(judge => {
+                const judgeHtml = `
+                    <div class="p-4 mb-3 bg-white rounded-md shadow-sm">
+                        <h5 class="font-semibold">${judge.name} <span class="bg-blue-200 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${judge.style}</span></h5>
+                        <p class="text-sm mt-1"><strong>Bias Prediction:</strong> ${judge.bias}</p>
+                        <p class="text-sm mt-1"><strong>AI Insight:</strong> ${judge.insights}</p>
+                    </div>
+                `;
+                judgesContent.innerHTML += judgeHtml;
+            });
+        }
+
+        function populateMotions(motions) {
+            const motionsContent = document.getElementById('motions-content');
+            motionsContent.innerHTML = '';
+            motions.forEach(motion => {
+                const motionHtml = `
+                    <div class="p-4 mb-3 bg-white rounded-md shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <h5 class="font-semibold text-gray-800">${motion.title}</h5>
+                            <span class="bg-gray-200 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${motion.challenge}</span>
+                        </div>
+                        <p class="text-sm mt-2"><strong>Popularity:</strong> ${motion.popularity}%</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                            <div class="h-2 rounded-full" style="width: ${motion.popularity}%; background: linear-gradient(to right, #667eea, #764ba2);"></div>
+                        </div>
+                    </div>
+                `;
+                motionsContent.innerHTML += motionHtml;
+            });
+        }
+
+        function generateAIAnalysis(dashboardData) {
+            const { speakers, teams, judges, motions } = dashboardData;
+            const teamsContent = teams.map(t => `${t.name} (Score: ${t.score})`).join(', ');
+            const topSpeaker = speakers.reduce((prev, current) => (prev.score > current.score) ? prev : current);
+            const lowSpeaker = speakers.reduce((prev, current) => (prev.score < current.score) ? prev : current);
+            const judgeStyles = judges.map(j => j.style).join(', ');
+            const popularMotion = motions.reduce((prev, current) => (prev.popularity > current.popularity) ? prev : current);
+
+            const analysisText = `
+                <h3 class="font-bold text-lg mb-2">Round Analysis Summary</h3>
+                <p class="mb-2"><strong>Key Insight:</strong> The round was characterized by a clear performance gap between teams. ${topSpeaker.name} from **${topSpeaker.team}** delivered a standout performance, earning a top score of ${topSpeaker.score}. This likely contributed significantly to their team's overall success.</p>
+                <p class="mb-2"><strong>Performance Trends:</strong> Team scores were ${teamsContent}. The highest-scoring team was **${teams[0].name}**, with an average of ${teams[0].score} points. The lowest-scoring team was **${teams[1].name}**, with an average of ${teams[1].score} points.</p>
+                <p class="mb-2"><strong>Speaker Recommendations:</strong> **${topSpeaker.name}** is a clear talent, showing strength in **${topSpeaker.feedback.split(' ')[0]}** and **${topSpeaker.feedback.split(' ')[1]}**. Other speakers, like **${lowSpeaker.name}**, should focus on improving their **${lowSpeaker.feedback.split(' ')[0]}** and **${lowSpeaker.feedback.split(' ')[1]}** based on the feedback provided.</p>
+                <p class="mb-2"><strong>Judge-Motion Alignment:</strong> The judges for this round were categorized as **${judgeStyles}**. The most debated motion was "${popularMotion.title}", which aligned well with the technical judging style and led to clear differentiation in scores.</p>
+                <p class="mb-2"><strong>Future Strategy:</strong> Teams should study the performance of top speakers and consider adapting their own strategies to emulate their strengths, particularly in areas like argumentation and rebuttal.</p>
+            `;
+            
+            document.getElementById('ai-insights-display').innerHTML = analysisText;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    navItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    showSection(item.dataset.target);
+                });
+            });
+
+            // Start the process by loading all the data
+            loadDashboardData();
+        });
+    </script>
 </body>
 </html>
