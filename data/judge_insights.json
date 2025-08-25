@@ -1,87 +1,26 @@
-{
-  "judge_name": "Arjun Mehta",
-  "experience_level": "Senior Judge",
-  "judging_style": "Technical and analytical",
-  "total_rounds_judged": 45,
-  "average_scores_given": 78.5,
-  "judge_style": "Strict, focuses on logical consistency and evidence-based arguments",
-  "overall_judging_insight": "Tends to reward clear argumentation over rhetoric. Values substance and logical flow. Less influenced by delivery style.",
-  "scoring_patterns": {
-    "score_range": {
-      "highest": 92,
-      "lowest": 65,
-      "most_common": 78
-    },
-    "criteria_weights": {
-      "content": 40,
-      "strategy": 25,
-      "delivery": 20,
-      "engagement": 15
-    }
+[
+  {
+    "name": "Arjun Mehta",
+    "style": "Technical and analytical",
+    "bias": "Neutral - no significant bias towards government or opposition",
+    "insights": "Tends to reward clear argumentation over rhetoric. Values substance and logical flow. Less influenced by delivery style. Particularly knowledgeable in technology and social policy debates."
   },
-  "preferences": {
-    "argument_style": "Prefers structured, evidence-based arguments",
-    "delivery_style": "Values clarity over charisma",
-    "engagement": "Appreciates good POI handling and strategic thinking",
-    "pet_peeves": ["Time overruns", "Unsupported claims", "Poor rebuttals"]
+  {
+    "name": "Kavya Nair",
+    "style": "Rhetoric and delivery",
+    "bias": "Slight preference for opening government due to case setting.",
+    "insights": "Gives high scores for clear structure and charismatic delivery. Values emotional appeal and strong stage presence."
   },
-  "bias_analysis": {
-    "side_preference": "Neutral - no significant bias towards government or opposition",
-    "position_preference": "Slight preference for opening speakers who set clear frameworks",
-    "topic_expertise": "Particularly knowledgeable in technology and social policy debates"
+  {
+    "name": "Rajesh Kumar",
+    "style": "Strategic",
+    "bias": "Slight preference for closing speakers who synthesize the debate well.",
+    "insights": "Focuses on the bigger picture and how each team member's speech contributes to the overall strategy. Values high-impact rebuttals."
   },
-  "rounds": [
-    {
-      "round": "Round 1",
-      "motion": "This House believes that social media platforms should be held legally responsible for the mental health impacts of their algorithms",
-      "winning_side": "Government",
-      "speakers_scored": [
-        {"name": "Arjun Verma", "team": "IIT Delhi Debate Society", "score": 78, "position": "CG1"},
-        {"name": "Aarav Mehta", "team": "IIT Delhi Debate Society", "score": 82, "position": "CG2"},
-        {"name": "Priya Sharma", "team": "DU Debating Society", "score": 85, "position": "OO1"},
-        {"name": "Rohan Gupta", "team": "DU Debating Society", "score": 79, "position": "OO2"}
-      ],
-      "feedback_highlights": "Rewarded strong evidence use and logical flow. Penalized weak rebuttals and time management issues."
-    },
-    {
-      "round": "Round 5",
-      "motion": "This House would implement a universal basic income",
-      "winning_side": "Opposition",
-      "speakers_scored": [
-        {"name": "Arjun Nair", "team": "IIM Bangalore Speakers", "score": 88, "position": "OG1"},
-        {"name": "Kavita Desai", "team": "IIM Bangalore Speakers", "score": 84, "position": "OG2"},
-        {"name": "Ravi Krishnan", "team": "NLSIU Advocates", "score": 91, "position": "OO1"},
-        {"name": "Pooja Agarwal", "team": "NLSIU Advocates", "score": 87, "position": "OO2"}
-      ],
-      "feedback_highlights": "Excellent technical debate. High scores for well-researched arguments and strategic positioning."
-    },
-    {
-      "round": "Round 8",
-      "motion": "This House believes that artificial intelligence development should be subject to international regulation",
-      "winning_side": "Government",
-      "speakers_scored": [
-        {"name": "Aditi Sharma", "team": "JNU Debate Forum", "score": 89, "position": "OG1"},
-        {"name": "Harsh Patel", "team": "JNU Debate Forum", "score": 86, "position": "OG2"},
-        {"name": "Tanvi Jain", "team": "ISB Hyderabad Orators", "score": 82, "position": "OO1"},
-        {"name": "Neeraj Singh", "team": "ISB Hyderabad Orators", "score": 80, "position": "OO2"}
-      ],
-      "feedback_highlights": "Rewarded deep understanding of technical subject matter. Valued practical policy implications over theoretical arguments."
-    }
-  ],
-  "adaptation_strategies": {
-    "for_teams": [
-      "Focus on evidence-based arguments with credible sources",
-      "Maintain clear logical structure throughout speeches",
-      "Prepare strong rebuttals and anticipate counter-arguments",
-      "Manage time effectively to avoid rushing conclusions",
-      "Use concrete examples rather than abstract theoretical points"
-    ],
-    "for_speakers": [
-      "Prioritize substance over style in delivery",
-      "Handle POIs confidently and directly",
-      "Build clear links between arguments and motion",
-      "Address weaknesses in your case proactively",
-      "Support all claims with evidence or logical reasoning"
-    ]
+  {
+    "name": "Anitha Rao",
+    "style": "Holistic",
+    "bias": "Neutral - focuses on the overall merit of arguments.",
+    "insights": "Evaluates all aspects of a debate equally, including content, strategy, and delivery. Appreciates novel arguments and strong points of information (POIs)."
   }
-}
+]
