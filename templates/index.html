@@ -141,12 +141,12 @@
     <script>
         async function loadDashboardData() {
             try {
-                // The key fix is here: correctly fetching JSON files from the 'static/data' directory.
+                // Fetch each JSON file individually from the correct relative path.
                 const [speakersRes, teamsRes, judgesRes, motionsRes] = await Promise.all([
-                    fetch('/static/data/speakers.json'),
-                    fetch('/static/data/teams.json'),
-                    fetch('/static/data/judges.json'),
-                    fetch('/static/data/motions.json')
+                    fetch('/static/data/speaker_feedback.json'),
+                    fetch('/static/data/team_summary.json'),
+                    fetch('/static/data/judge_insights.json'),
+                    fetch('/static/data/motion_data.json')
                 ]);
 
                 // Check for successful responses
