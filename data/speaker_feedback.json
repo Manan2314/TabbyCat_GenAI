@@ -1,68 +1,66 @@
-{
-  "team_name": "IIT Delhi Debate Society",
-  "members": ["Arjun Verma", "Aarav Mehta"],
-  "tournament": "Indian Debating League Championship",
-  "overall_ranking": 3,
-  "total_points": 18,
-  "win_rate": 0.75,
-  "rounds": [
-    {
-      "round": "Round 1",
-      "motion": "This House believes that social media platforms should be held legally responsible for the mental health impacts of their algorithms",
-      "side": "Closing Government",
-      "result": "Win",
-      "average_score": 80,
-      "team_feedback": "Strong opening with novel arguments. Good coordination between speakers. Could improve on time management and POI handling.",
-      "opponents": "DU Debating Society",
-      "judges": ["Judge Arjun Mehta", "Judge Kavya Nair"]
-    },
-    {
-      "round": "Round 2",
-      "motion": "This House would ban all forms of genetic enhancement in humans",
-      "side": "Opening Opposition",
-      "result": "Win",
-      "average_score": 83,
-      "team_feedback": "Excellent rebuttals and strategic positioning. Improved teamwork and better use of evidence. Strong closing arguments.",
-      "opponents": "IIM Bangalore Speakers",
-      "judges": ["Judge Rajesh Kumar", "Judge Anitha Rao"]
-    },
-    {
-      "round": "Round 3",
-      "motion": "This House believes that developing countries should prioritize economic growth over environmental protection",
-      "side": "Closing Opposition",
-      "result": "Loss",
-      "average_score": 76,
-      "team_feedback": "Good individual performances but lacked strategic coordination. Arguments were sound but didn't effectively counter government's framework.",
-      "opponents": "NLSIU Advocates",
-      "judges": ["Judge Srinivas Murthy", "Judge Deepa Joshi"]
-    },
-    {
-      "round": "Round 4",
-      "motion": "This House would require all political advertisements to be fact-checked by independent bodies before publication",
-      "side": "Opening Government",
-      "result": "Win",
-      "average_score": 85,
-      "team_feedback": "Outstanding performance. Clear definition, strong case building, and excellent teamwork. Best round so far with confident delivery.",
-      "opponents": "JNU Debate Forum",
-      "judges": ["Judge Pradeep Singh", "Judge Meera Gupta"]
-    }
-  ],
-  "strengths": [
-    "Strong individual speaking skills",
-    "Good use of evidence and examples",
-    "Improving coordination between speakers",
-    "Confident delivery and stage presence"
-  ],
-  "areas_for_improvement": [
-    "Time management during speeches",
-    "Strategic positioning against strong opposition",
-    "Consistent POI handling",
-    "Maintaining performance under pressure"
-  ],
-  "performance_trends": {
-    "score_trend": "Improving",
-    "consistency": "Moderate",
-    "peak_performance": "Round 4",
-    "lowest_performance": "Round 3"
+[
+  {
+    "name": "Arjun Verma",
+    "team": "IIT Delhi Debate Society",
+    "role": "Closing Government - 1st Speaker",
+    "round": "Round 1",
+    "score": 78,
+    "feedback": "Your arguments were novel and well-structured. You demonstrated excellent understanding of the motion and provided compelling evidence to support your stance. Try to back your claims with stronger data and clearer links to the motion. Work on maintaining eye contact with the judges and vary your vocal tone for better engagement."
+  },
+  {
+    "name": "Aarav Mehta",
+    "team": "IIT Delhi Debate Society",
+    "role": "Closing Government - 2nd Speaker",
+    "round": "Round 1",
+    "score": 82,
+    "feedback": "Excellent rebuttals and strong closing arguments. You effectively dismantled opposition points and reinforced your team's case with clarity. Focus on time management during your speech. Some points felt rushed towards the end. Consider using more varied examples to illustrate your arguments."
+  },
+  {
+    "name": "Priya Sharma",
+    "team": "DU Debating Society",
+    "role": "Opening Opposition - 1st Speaker",
+    "round": "Round 1",
+    "score": 85,
+    "feedback": "Outstanding delivery and argumentation. Your opening was compelling and set a strong foundation for your team's case. Excellent use of statistics and real-world examples. Work on acknowledging potential weaknesses in your case proactively. This shows awareness and strengthens your overall argument rather than leaving gaps for opponents."
+  },
+  {
+    "name": "Rohan Gupta",
+    "team": "DU Debating Society",
+    "role": "Opening Opposition - 2nd Speaker",
+    "round": "Round 1",
+    "score": 79,
+    "feedback": "Good substantive content and logical flow. You built well upon your partner's arguments and provided additional depth to your team's position. Improve your POI handling - some responses were too brief. Also work on projecting confidence through body language and vocal delivery."
+  },
+  {
+    "name": "Ananya Iyer",
+    "team": "IIM Bangalore Speakers",
+    "role": "Opening Government - 1st Speaker",
+    "round": "Round 2",
+    "score": 88,
+    "feedback": "Exceptional performance with clear structure and powerful delivery. Your definition was precise and your arguments were both logical and emotionally compelling. Consider addressing potential opposition arguments more thoroughly in your opening to strengthen your team's defensive position."
+  },
+  {
+    "name": "Karthik Reddy",
+    "team": "IIM Bangalore Speakers",
+    "role": "Opening Government - 2nd Speaker",
+    "round": "Round 2",
+    "score": 84,
+    "feedback": "Strong analytical skills and good use of evidence. You effectively supported your team's case with well-researched examples and logical reasoning. Work on making your delivery more dynamic. While your content is strong, varying your pace and tone would make your speech more engaging."
+  },
+  {
+    "name": "Sneha Patel",
+    "team": "NLSIU Advocates",
+    "role": "Closing Opposition - 1st Speaker",
+    "round": "Round 2",
+    "score": 81,
+    "feedback": "Strong logical framework and excellent point-by-point rebuttals. You maintained consistency throughout your speech and linked back to core principles effectively. Work on incorporating more contemporary examples to make your arguments more relatable. Also focus on varying your vocal delivery for better audience engagement."
+  },
+  {
+    "name": "Vikram Singh",
+    "team": "NLSIU Advocates",
+    "role": "Closing Opposition - 2nd Speaker",
+    "round": "Round 2",
+    "score": 86,
+    "feedback": "Brilliant closing with powerful rhetoric and strong impact analysis. You successfully synthesized the debate and provided compelling reasons for your side's victory. Consider spending more time on direct clash with government arguments rather than just extending your own case. This would strengthen your position significantly."
   }
-}
+]
