@@ -10,7 +10,7 @@
     "context": "With rising concerns about mental health among young people and the addictive nature of social media algorithms, this motion explores corporate responsibility in the digital age.",
     "key_stakeholders": [
       "Social media companies",
-      "Mental health professionals", 
+      "Mental health professionals",
       "Young users and parents",
       "Government regulators",
       "Legal experts"
@@ -23,7 +23,7 @@
     ],
     "opposition_arguments": [
       "Individual responsibility for platform usage",
-      "Technical difficulty in proving causation", 
+      "Technical difficulty in proving causation",
       "Risk of stifling innovation and free speech",
       "Existing regulatory frameworks are sufficient"
     ],
@@ -34,7 +34,7 @@
   {
     "motion_id": 2,
     "motion_text": "This House would ban all forms of genetic enhancement in humans",
-    "round": "Round 2", 
+    "round": "Round 2",
     "category": "Bioethics & Science",
     "difficulty": "Advanced",
     "time_limit": "7 minutes per speaker",
@@ -43,7 +43,7 @@
     "key_stakeholders": [
       "Medical researchers and biotechnology companies",
       "Patients with genetic disorders",
-      "Ethicists and religious groups", 
+      "Ethicists and religious groups",
       "Future generations",
       "Regulatory bodies"
     ],
@@ -67,7 +67,7 @@
     "motion_id": 3,
     "motion_text": "This House believes that developing countries should prioritize economic growth over environmental protection",
     "round": "Round 3",
-    "category": "Development & Environment", 
+    "category": "Development & Environment",
     "difficulty": "Intermediate",
     "time_limit": "7 minutes per speaker",
     "format": "British Parliamentary",
@@ -100,7 +100,7 @@
     "motion_text": "This House would require all political advertisements to be fact-checked by independent bodies before publication",
     "round": "Round 4",
     "category": "Politics & Media",
-    "difficulty": "Intermediate", 
+    "difficulty": "Intermediate",
     "time_limit": "7 minutes per speaker",
     "format": "British Parliamentary",
     "context": "Concerns about misinformation in political campaigns have led to calls for greater oversight of political advertising and messaging.",
@@ -108,7 +108,7 @@
       "Political parties and candidates",
       "Voters and general public",
       "Media companies and platforms",
-      "Fact-checking organizations", 
+      "Fact-checking organizations",
       "Electoral authorities"
     ],
     "government_arguments": [
@@ -120,7 +120,7 @@
     "opposition_arguments": [
       "Threatens free speech and political expression",
       "Risk of censorship and bias in fact-checking",
-      "Practical challenges in real-time verification", 
+      "Practical challenges in real-time verification",
       "Voters can evaluate claims themselves"
     ],
     "winning_side": "Government",
@@ -133,7 +133,7 @@
     "round": "Round 5",
     "category": "Economics & Social Policy",
     "difficulty": "Advanced",
-    "time_limit": "7 minutes per speaker", 
+    "time_limit": "7 minutes per speaker",
     "format": "British Parliamentary",
     "context": "As automation threatens traditional employment and inequality grows, UBI has emerged as a potential solution to economic insecurity.",
     "key_stakeholders": [
@@ -145,7 +145,7 @@
     ],
     "government_arguments": [
       "Provides economic security in changing job market",
-      "Reduces bureaucracy and welfare complexity", 
+      "Reduces bureaucracy and welfare complexity",
       "Enables entrepreneurship and risk-taking",
       "Addresses growing inequality and automation"
     ],
@@ -166,7 +166,7 @@
     "category": "Technology & Governance",
     "difficulty": "Advanced",
     "time_limit": "7 minutes per speaker",
-    "format": "British Parliamentary", 
+    "format": "British Parliamentary",
     "context": "Rapid AI development raises concerns about safety, ethics, and global competition, leading to calls for coordinated international oversight.",
     "key_stakeholders": [
       "AI researchers and tech companies",
@@ -187,7 +187,7 @@
       "Risk of regulatory capture by established players",
       "National security requires independent AI capabilities"
     ],
-    "winning_side": "Government", 
+    "winning_side": "Government",
     "debate_quality": "Excellent",
     "judge_feedback": "Sophisticated technical debate. Government effectively balanced innovation concerns with safety imperatives."
   }
