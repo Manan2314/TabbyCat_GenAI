@@ -193,13 +193,15 @@
             const { speakers, teams, judges, motions } = dashboardData;
             document.getElementById('total-speakers').textContent = speakers.length;
             document.getElementById('total-teams').textContent = teams.length;
-            document.getElementById('total-judges').textContent = judges.length;
+            // The new judges data is nested, so we need to access the correct property
+            document.getElementById('total-judges').textContent = judges.ai_insights.length;
             document.getElementById('total-motions').textContent = motions.length;
             
             populateTeams(teams, 'teams-content');
             populateSpeakers(speakers);
             populateTeams(teams, 'teams-content-full');
-            populateJudges(judges);
+            // Pass the nested judge data to the function
+            populateJudges(judges.ai_insights);
             populateMotions(motions);
         }
 
@@ -262,12 +264,14 @@
         function populateJudges(judges) {
             const judgesContent = document.getElementById('judges-content');
             judgesContent.innerHTML = '';
+            // The new judges data is an array inside the `ai_insights` property
             judges.forEach(judge => {
                 const judgeHtml = `
                     <div class="p-4 mb-3 bg-white rounded-md shadow-sm">
-                        <h5 class="font-semibold">${judge.name} <span class="bg-blue-200 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${judge.style}</span></h5>
-                        <p class="text-sm mt-1"><strong>Bias Prediction:</strong> ${judge.bias}</p>
-                        <p class="text-sm mt-1"><strong>AI Insight:</strong> ${judge.insights}</p>
+                        <!-- Use the new property names from the JSON data -->
+                        <h5 class="font-semibold">${judge.judge_name} <span class="bg-blue-200 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${judge.judging_style}</span></h5>
+                        <p class="text-sm mt-1"><strong>Bias Prediction:</strong> ${judge.bias_analysis.side_preference}</p>
+                        <p class="text-sm mt-1"><strong>AI Insight:</strong> ${judge.overall_judging_insight}</p>
                     </div>
                 `;
                 judgesContent.innerHTML += judgeHtml;
@@ -299,7 +303,8 @@
             const teamsContent = teams.map(t => `${t.name} (Score: ${t.score})`).join(', ');
             const topSpeaker = speakers.reduce((prev, current) => (prev.score > current.score) ? prev : current);
             const lowSpeaker = speakers.reduce((prev, current) => (prev.score < current.score) ? prev : current);
-            const judgeStyles = judges.map(j => j.style).join(', ');
+            // Access the new nested data structure for judge styles
+            const judgeStyles = judges.ai_insights.map(j => j.judging_style).join(', ');
             const popularMotion = motions.reduce((prev, current) => (prev.popularity > current.popularity) ? prev : current);
 
             const analysisText = `
